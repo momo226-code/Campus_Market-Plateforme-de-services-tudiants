@@ -50,7 +50,7 @@ const Home = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-8 border border-blue-100">
               <Star size={14} fill="currentColor" />
-              Projet Prototype Campus 2024
+              Projet Prototype Campus Market 2026
             </div>
             
             {/* Grand Titre VENTURA Mixé */}
