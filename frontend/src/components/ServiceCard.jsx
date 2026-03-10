@@ -1,9 +1,7 @@
 const ServiceCard = ({ service }) => {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden 
-                    hover:border-blue-500 hover:-translate-y-1 
-                    transition-all duration-300 shadow-lg">
-
+   <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden 
+                hover:shadow-xl transition duration-300 shadow-md">
       {/* Image */}
       <div className="h-44 bg-slate-800 overflow-hidden">
         {service.image ? (
@@ -21,11 +19,11 @@ const ServiceCard = ({ service }) => {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="text-lg font-semibold mb-2 text-white">
+        <h3 className="text-lg font-semibold mb-2 text-slate-800">
           {service.title}
         </h3>
 
-        <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+        <p className="text-slate-500 text-sm mb-4 line-clamp-2">
           {service.description}
         </p>
 
@@ -53,8 +51,8 @@ const ServiceCard = ({ service }) => {
               );
             }
           }}
-          className="w-full bg-green-600 hover:bg-green-700 
-                     py-2 rounded-lg text-sm font-medium transition"
+         className="w-full bg-[#2B2D42] hover:bg-black 
+           py-2 rounded-lg text-sm font-medium text-white transition"
         >
           Contacter le prestataire
         </button>
