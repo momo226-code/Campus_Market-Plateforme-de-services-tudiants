@@ -9,15 +9,18 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// Configuration CORS pour accepter ton futur frontend sur Vercel
+app.use(cors({
+  origin: "*", 
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// 1. Logique de connexion optimisée pour le Serverless
+// Connexion optimisée pour Vercel (Serverless)
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) {
-    return; // Déjà connecté ou en cours de connexion
-  }
-  
+  if (mongoose.connection.readyState >= 1) return;
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB connecté ✅");
@@ -26,27 +29,27 @@ const connectDB = async () => {
   }
 };
 
-// 2. Middleware pour s'assurer que la DB est connectée à chaque requête
+// Middleware pour connecter la DB à chaque requête
 app.use(async (req, res, next) => {
   await connectDB();
   next();
 });
 
-// 3. Tes routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Server is running on Vercel 🚀");
+  res.send("Campus-Market API is running 🚀");
 });
 
-// 4. IMPORTANT : Exportation pour Vercel (au lieu de app.listen)
-// On garde le app.listen uniquement pour le développement local
+// Export pour Vercel
+module.exports = app;
+
+// Écoute locale uniquement (ne s'exécute pas sur Vercel)
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`Server running locally on port ${PORT}`);
+    console.log(`Serveur local sur le port ${PORT}`);
   });
 }
-
-module.exports = app;
