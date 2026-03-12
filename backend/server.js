@@ -1,9 +1,9 @@
-
-const authRoutes = require("./routes/authRoutes");
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const authRoutes = require("./routes/authRoutes");
+const serviceRoutes = require("./routes/serviceRoutes");
 
 dotenv.config();
 
@@ -11,23 +11,42 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/auth", authRoutes);
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected ✅"))
-  .catch((err) => console.log("DB Error:", err));
+// 1. Logique de connexion optimisée pour le Serverless
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return; // Déjà connecté ou en cours de connexion
+  }
+  
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connecté ✅");
+  } catch (err) {
+    console.error("Erreur de connexion DB:", err);
+  }
+};
+
+// 2. Middleware pour s'assurer que la DB est connectée à chaque requête
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
+// 3. Tes routes
+app.use("/api/auth", authRoutes);
+app.use("/api/services", serviceRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Server is running 🚀");
+  res.send("Server is running on Vercel 🚀");
 });
 
-const PORT = process.env.PORT || 5000;
+// 4. IMPORTANT : Exportation pour Vercel (au lieu de app.listen)
+// On garde le app.listen uniquement pour le développement local
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running locally on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-
-////////////////////////////////////////////////
-const serviceRoutes = require("./routes/serviceRoutes");
-app.use("/api/services", serviceRoutes);
+module.exports = app;
