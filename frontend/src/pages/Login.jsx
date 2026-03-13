@@ -10,8 +10,6 @@ const Login = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  // On récupère le message de succès venant du Register
   const successMsg = location.state?.success;
 
   const handleChange = (e) => {
@@ -21,20 +19,30 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
+
     try {
-      setLoading(true);
       const res = await API.post("/auth/login", form);
       
-      // Stockage du token pour rester connecté
-      localStorage.setItem("token", res.data.token);
+      // 1. Stockage du token
+      const token = res.data.token;
+      localStorage.setItem("token", token);
       
-      // MODIFICATION : On redirige vers le Dashboard par défaut après connexion
-      // Si l'utilisateur a été intercepté en voulant aller ailleurs, on respecte son choix initial
+      // 2. CRUCIAL : Forcer l'instance API à utiliser le nouveau token immédiatement
+      // Cela évite que le premier appel au Dashboard soit rejeté (401)
+      API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      
+      // 3. Redirection intelligente
       const redirectTo = location.state?.from?.pathname || "/dashboard"; 
-      navigate(redirectTo);
       
+      // Petit délai de sécurité pour s'assurer que le localStorage est prêt
+      setTimeout(() => {
+        navigate(redirectTo, { replace: true });
+      }, 100);
+
     } catch (error) {
-      setError("Email ou mot de passe incorrect.");
+      console.error("Login error details:", error.response?.data);
+      setError(error.response?.data?.message || "Email ou mot de passe incorrect.");
     } finally {
       setLoading(false);
     }
@@ -43,16 +51,14 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#D7CDC1]/30 relative overflow-hidden px-4">
       
-      {/* Cercles de couleurs flous pour l'ambiance Ventura */}
+      {/* Background Ventura */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#C59473]/20 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#3D332D]/10 blur-[120px] rounded-full"></div>
 
       <div className="relative z-10 w-full max-w-md">
-        
-        {/* Logo / Badge */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-[#3D332D] rounded-2xl flex items-center justify-center text-[#D7CDC1] font-black text-2xl shadow-xl">
+            <div className="w-12 h-12 bg-[#3D332D] rounded-2xl flex items-center justify-center text-[#D7CDC1] font-black text-2xl shadow-xl hover:rotate-6 transition-transform">
               V
             </div>
           </Link>
@@ -62,7 +68,6 @@ const Login = () => {
           <p className="text-[#3D332D]/60 font-medium mt-2 italic">L'excellence de l'UM6P en un clic.</p>
         </div>
 
-        {/* --- BLOC MESSAGE DE SUCCÈS --- */}
         {successMsg && (
           <div className="mb-6 bg-green-50 border border-green-100 text-green-600 p-4 rounded-2xl text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
             <CheckCircle size={20} />
@@ -70,19 +75,15 @@ const Login = () => {
           </div>
         )}
 
-        {/* Formulaire Card */}
         <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl shadow-[#3D332D]/5 border border-[#D7CDC1]/50 relative overflow-hidden">
-          
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-bold flex items-center gap-2">
+              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-bold flex items-center gap-2 animate-bounce">
                 <Star size={16} fill="currentColor" /> {error}
               </div>
             )}
 
             <div className="space-y-4">
-              {/* Email */}
               <div className="relative group">
                 <label className="text-[10px] font-black uppercase tracking-widest text-[#3D332D]/40 ml-4 mb-1 block">Email Campus</label>
                 <div className="relative">
@@ -98,7 +99,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Mot de passe */}
               <div className="relative group">
                 <label className="text-[10px] font-black uppercase tracking-widest text-[#3D332D]/40 ml-4 mb-1 block">Mot de passe</label>
                 <div className="relative">

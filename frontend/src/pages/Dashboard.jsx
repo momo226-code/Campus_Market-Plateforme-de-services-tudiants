@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Edit3, Trash2, Plus, Layout, ShoppingBag, Eye, LogOut } from "lucide-react";
+import { Edit3, Trash2, Plus, Layout, ShoppingBag, Eye, LogOut, Package } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../services/api";
 
@@ -8,46 +8,46 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // 1. Récupération des services au montage
   useEffect(() => {
     fetchServices();
   }, []);
 
   const fetchServices = async () => {
     try {
-      // Vérifie que ton endpoint est bien /services/me ou /services/mine
+      setLoading(true);
+      // On s'assure que le token est bien présent avant l'appel
       const res = await API.get("/services/me"); 
-      setMyServices(res.data);
-      setLoading(false);
+      
+      // SÉCURITÉ : On vérifie si les données sont dans res.data ou res.data.services
+      const data = Array.isArray(res.data) ? res.data : (res.data.services || []);
+      setMyServices(data);
     } catch (error) {
-      console.error("Erreur de chargement", error);
+      console.error("Erreur de chargement des services:", error.response || error);
+      if (error.response?.status === 401) {
+        // Si le token est expiré ou invalide, retour au login
+        handleLogout();
+      }
+    } finally {
+      // On arrête le chargement quoi qu'il arrive pour éviter l'écran blanc
       setLoading(false);
     }
   };
 
-  // 2. Logique de déconnexion
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    delete API.defaults.headers.common["Authorization"];
+    navigate("/login");
   };
 
-  // 3. LOGIQUE DELETE - Est-elle OK ?
   const handleDelete = async (id) => {
-    // Confirmation visuelle avant action irréversible
-    const confirmDelete = window.confirm("Es-tu certain de vouloir supprimer ce talent ? Cette action est irréversible.");
+    const confirmDelete = window.confirm("Es-tu certain de vouloir supprimer ce talent ?");
     
     if (confirmDelete) {
       try {
-        // APPEL API : Vérifie que ton backend accepte DELETE sur /services/:id
         await API.delete(`/services/${id}`);
-        
-        // MISE À JOUR UI : On filtre l'état local pour faire disparaître le service instantanément
-        setMyServices((prevServices) => prevServices.filter(service => service._id !== id));
-        
-        console.log("Service supprimé avec succès");
+        setMyServices((prev) => prev.filter(s => s._id !== id));
       } catch (error) {
-        console.error("Erreur suppression:", error);
-        alert("Impossible de supprimer le service. Vérifie ta connexion ou tes droits.");
+        alert("Erreur lors de la suppression.");
       }
     }
   };
@@ -55,15 +55,15 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#FDFBF9]">
       
-      {/* --- NAV DASHBOARD --- */}
+      {/* --- NAVBAR DASHBOARD --- */}
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-[#D7CDC1]/30 z-[100] px-8 py-5 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-           <div className="w-8 h-8 bg-[#3D332D] rounded-lg flex items-center justify-center text-[#D7CDC1] font-black">V</div>
-           <span className="font-[1000] tracking-tighter text-[#3D332D]">VENTURA.</span>
-        </div>
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-10 h-10 bg-[#3D332D] rounded-xl flex items-center justify-center text-[#D7CDC1] font-black group-hover:bg-[#C59473] transition-colors">V</div>
+          <span className="font-[1000] tracking-tighter text-[#3D332D] text-xl">VENTURA.</span>
+        </Link>
         <button 
           onClick={handleLogout}
-          className="flex items-center gap-2 text-[#3D332D]/50 hover:text-red-500 font-black uppercase text-[10px] tracking-[0.2em] transition-colors"
+          className="flex items-center gap-2 text-[#3D332D]/40 hover:text-red-500 font-black uppercase text-[10px] tracking-[0.2em] transition-all"
         >
           Déconnexion <LogOut size={16} />
         </button>
@@ -77,62 +77,76 @@ const Dashboard = () => {
             <h1 className="text-5xl font-[1000] tracking-tighter text-[#3D332D]">
               Mon Studio<span className="text-[#C59473]">.</span>
             </h1>
-            <p className="text-[#3D332D]/50 font-medium mt-1">Gère ton catalogue de services UM6P.</p>
+            <p className="text-[#3D332D]/40 font-bold mt-2 uppercase text-[10px] tracking-[0.2em]">
+              Gestion du catalogue UM6P
+            </p>
           </div>
-          <Link to="/add-service" className="bg-[#3D332D] text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 hover:bg-[#C59473] transition-all shadow-xl shadow-[#3D332D]/10">
-            <Plus size={18} /> Nouveau Service
+          <Link to="/add-service" className="bg-[#3D332D] text-white px-8 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 hover:bg-[#C59473] transition-all shadow-2xl shadow-[#3D332D]/10 active:scale-95">
+            <Plus size={18} strokeWidth={3} /> Nouveau Service
           </Link>
         </div>
 
         {/* --- STATS --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <StatCard icon={<Layout />} label="Services" value={myServices.length} color="bg-[#C59473]/10 text-[#C59473]" />
-          <StatCard icon={<Eye />} label="Vues" value="--" color="bg-[#3D332D]/5 text-[#3D332D]" />
-          <StatCard icon={<ShoppingBag />} label="Commandes" value="--" color="bg-[#D7CDC1]/30 text-[#3D332D]" />
+          <StatCard icon={<Package size={20}/>} label="Total Services" value={myServices.length} color="bg-white border border-[#D7CDC1]/50 text-[#3D332D]" />
+          <StatCard icon={<Eye size={20}/>} label="Visibilité" value="--" color="bg-white border border-[#D7CDC1]/50 text-[#3D332D]" />
+          <StatCard icon={<ShoppingBag size={20}/>} label="Ventes" value="--" color="bg-[#C59473] text-white" />
         </div>
 
-        {/* --- LISTE --- */}
-        <div className="bg-white border border-[#D7CDC1]/50 rounded-[2.5rem] overflow-hidden shadow-sm">
-          <div className="p-8 border-b border-[#D7CDC1]/30">
-            <h3 className="font-black uppercase tracking-widest text-xs text-[#3D332D]">Mes Annonces Actives</h3>
+        {/* --- LISTE DES SERVICES --- */}
+        <div className="bg-white border border-[#D7CDC1]/50 rounded-[3rem] overflow-hidden shadow-sm">
+          <div className="p-8 border-b border-[#D7CDC1]/30 bg-[#FDFBF9]/50">
+            <h3 className="font-black uppercase tracking-[0.3em] text-[10px] text-[#3D332D]/40">Catalogue Actif</h3>
           </div>
           
           <div className="divide-y divide-[#D7CDC1]/20">
             {loading ? (
-              <div className="p-20 text-center text-[#3D332D]/30 italic font-bold">Chargement...</div>
-            ) : myServices.length > 0 ? myServices.map(service => (
-              <div key={service._id} className="p-6 flex flex-col md:flex-row items-center justify-between hover:bg-[#FDFBF9] transition-colors gap-4">
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                  <div className="w-16 h-16 bg-[#D7CDC1]/20 rounded-2xl flex items-center justify-center shrink-0">
-                    <Layout className="text-[#3D332D]/20" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-black uppercase text-[#C59473] tracking-widest">{service.category}</span>
-                    <h4 className="font-bold text-[#3D332D] leading-tight">{service.title}</h4>
-                    <p className="text-[#3D332D]/40 font-black text-sm">{service.price} DH</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-                  <button 
-                    onClick={() => navigate(`/edit-service/${service._id}`)}
-                    className="p-4 bg-[#FDFBF9] border border-[#D7CDC1] text-[#3D332D] rounded-2xl hover:bg-[#3D332D] hover:text-white transition-all shadow-sm group"
-                    title="Modifier"
-                  >
-                    <Edit3 size={18} className="group-hover:scale-110 transition-transform" />
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(service._id)}
-                    className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm group"
-                    title="Supprimer"
-                  >
-                    <Trash2 size={18} className="group-hover:scale-110 transition-transform" />
-                  </button>
-                </div>
+              <div className="p-32 text-center">
+                <div className="w-8 h-8 border-4 border-[#C59473] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-[#3D332D]/30 font-bold uppercase text-[10px] tracking-widest">Synchronisation...</p>
               </div>
-            )) : (
-              <div className="p-20 text-center text-[#3D332D]/30 italic font-medium">
-                Aucun service trouvé dans ton studio.
+            ) : myServices.length > 0 ? (
+              myServices.map(service => (
+                <div key={service._id} className="p-8 flex flex-col md:flex-row items-center justify-between hover:bg-[#FDFBF9] transition-all gap-6 group">
+                  <div className="flex items-center gap-6 w-full md:w-auto">
+                    <div className="w-20 h-20 bg-[#3D332D] rounded-[1.5rem] overflow-hidden shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+                      {service.image ? (
+                        <img src={service.image} className="w-full h-full object-cover opacity-80" alt="" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#D7CDC1]/20"><Layout /></div>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-black uppercase text-[#C59473] tracking-[0.2em] mb-1 block">{service.category || "Service"}</span>
+                      <h4 className="font-[1000] text-xl text-[#3D332D] tracking-tighter leading-none mb-2">{service.title}</h4>
+                      <p className="text-[#3D332D] font-black text-lg">{service.price} <span className="text-[10px] opacity-40">DH</span></p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <button 
+                      onClick={() => navigate(`/edit-service/${service._id}`)}
+                      className="p-4 bg-white border border-[#D7CDC1] text-[#3D332D] rounded-2xl hover:border-[#3D332D] transition-all active:scale-90"
+                      title="Modifier"
+                    >
+                      <Edit3 size={20} />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(service._id)}
+                      className="p-4 bg-red-50 text-red-500 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white transition-all active:scale-90"
+                      title="Supprimer"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-32 text-center">
+                <div className="w-16 h-16 bg-[#FDFBF9] rounded-full flex items-center justify-center mx-auto mb-6 text-[#D7CDC1]">
+                    <Package size={30} />
+                </div>
+                <p className="text-[#3D332D]/30 font-bold uppercase text-[10px] tracking-widest">Ton studio est vide</p>
               </div>
             )}
           </div>
@@ -143,11 +157,11 @@ const Dashboard = () => {
 };
 
 const StatCard = ({ icon, label, value, color }) => (
-  <div className={`p-8 rounded-[2rem] ${color} flex items-center gap-6`}>
-    <div className="p-4 bg-white/50 rounded-2xl shadow-sm">{icon}</div>
+  <div className={`p-8 rounded-[2.5rem] ${color} flex items-center gap-6 shadow-sm transition-transform hover:-translate-y-1`}>
+    <div className="p-4 bg-white/10 rounded-2xl">{icon}</div>
     <div>
-      <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{label}</p>
-      <p className="text-3xl font-[1000] tracking-tighter">{value}</p>
+      <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-50 mb-1">{label}</p>
+      <p className="text-4xl font-[1000] tracking-tighter leading-none">{value}</p>
     </div>
   </div>
 );
