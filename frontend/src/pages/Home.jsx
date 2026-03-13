@@ -8,11 +8,20 @@ import CategorySection from "../components/CategorySection";
 const Home = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(""); // État pour le filtre
   const [feedbackText, setFeedbackText] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  // useEffect intelligent : il se relance quand selectedCategory change
   useEffect(() => {
-    API.get("/services")
+    setLoading(true);
+    
+    // Construction de l'URL avec paramètre de filtrage
+    const url = selectedCategory 
+      ? `/services?category=${encodeURIComponent(selectedCategory)}` 
+      : "/services";
+
+    API.get(url)
       .then((res) => {
         setServices(res.data);
         setLoading(false);
@@ -21,7 +30,7 @@ const Home = () => {
         console.error("Erreur de chargement:", err);
         setLoading(false);
       });
-  }, []);
+  }, [selectedCategory]); // <--- Dépendance clé
 
   const handleSendFeedback = async (e) => {
     e.preventDefault();
@@ -47,7 +56,6 @@ const Home = () => {
       
       {/* --- SECTION HERO --- */}
       <section className="relative pt-40 pb-32 overflow-hidden bg-white">
-        {/* Le dégradé subtil vers la couleur sable */}
         <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-[#D7CDC1]/30"></div>
         
         <div className="max-w-7xl mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -71,7 +79,6 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Illustration style Ventura */}
           <div className="relative hidden lg:block animate-in zoom-in duration-1000">
             <div className="w-[450px] h-[450px] bg-[#D7CDC1]/40 rounded-[4rem] rotate-6 absolute inset-0 -z-10"></div>
             <div className="w-[450px] h-[450px] bg-[#3D332D] rounded-[4rem] -rotate-3 flex items-center justify-center shadow-3xl">
@@ -80,7 +87,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* WAVE DIVIDER (Comme sur tes images) */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[100px] fill-[#FDFBF9]">
             <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.43,147.69,126.35,232.4,108.47c51.92-11,98.37-33.84,149-47.5s101.25-24,159.58-15.54"></path>
@@ -88,38 +94,58 @@ const Home = () => {
         </div>
       </section>
 
-      {/* --- SECTION CATÉGORIES --- */}
+      {/* --- SECTION CATÉGORIES (Filtrage Connecté) --- */}
       <div id="categories" className="py-10">
-        <CategorySection />
+        <CategorySection 
+          onSelectCategory={setSelectedCategory} 
+          activeCategory={selectedCategory} 
+        />
       </div>
 
-      {/* --- SECTION SERVICES RÉCENTS --- */}
+      {/* --- SECTION SERVICES --- */}
       <section className="py-24 bg-[#D7CDC1]/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-16">
             <div>
-              <h2 className="text-4xl font-[1000] tracking-tighter">Dernières pépites<span className="text-[#C59473]">.</span></h2>
-              <p className="text-[#3D332D]/40 font-black uppercase text-[10px] tracking-widest mt-2">Fraîchement arrivés sur le campus</p>
+              <h2 className="text-4xl font-[1000] tracking-tighter">
+                {selectedCategory ? `${selectedCategory}` : "Dernières pépites"}
+                <span className="text-[#C59473]">.</span>
+              </h2>
+              <p className="text-[#3D332D]/40 font-black uppercase text-[10px] tracking-widest mt-2">
+                {selectedCategory ? `Talents en ${selectedCategory}` : "Fraîchement arrivés sur le campus"}
+              </p>
             </div>
-            <div className="w-20 h-1 bg-[#C59473] rounded-full hidden md:block mb-4"></div>
+            {selectedCategory && (
+               <button 
+                onClick={() => setSelectedCategory("")}
+                className="text-[10px] font-black uppercase tracking-widest text-[#C59473] hover:underline"
+               >
+                 Voir tout
+               </button>
+            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {loading ? (
-              <div className="col-span-3 text-center py-20">
+              <div className="col-span-full text-center py-20">
                 <div className="inline-block animate-spin w-8 h-8 border-4 border-[#C59473] border-t-transparent rounded-full mb-4"></div>
-                <p className="opacity-40 font-black uppercase tracking-widest text-[10px]">Chargement des talents...</p>
+                <p className="opacity-40 font-black uppercase tracking-widest text-[10px]">Filtrage des talents...</p>
               </div>
-            ) : services.slice(0, 3).map((service) => (
-              <ServiceCard key={service._id} service={service} />
-            ))}
+            ) : services.length > 0 ? (
+              services.map((service) => (
+                <ServiceCard key={service._id} service={service} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-20">
+                <p className="text-xl font-bold opacity-30">Aucun service dans cette catégorie pour le moment. 🌵</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* --- SECTION FEEDBACK CASH --- */}
+      {/* --- SECTION FEEDBACK --- */}
       <section className="py-32 px-6 bg-white relative">
-        {/* Wave inversée pour l'entrée dans la section feedback */}
         <div className="absolute top-0 left-0 w-full overflow-hidden leading-[0] transform rotate-180 -translate-y-[99%]">
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[80px] fill-white">
             <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.43,147.69,126.35,232.4,108.47c51.92-11,98.37-33.84,149-47.5s101.25-24,159.58-15.54"></path>
@@ -127,7 +153,6 @@ const Home = () => {
         </div>
 
         <div className="max-w-6xl mx-auto bg-[#C59473] rounded-[4rem] p-10 md:p-20 flex flex-col md:flex-row items-center gap-16 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(197,148,115,0.3)]">
-          
           <div className="md:w-1/2 text-white">
             <h2 className="text-5xl md:text-6xl font-[1000] italic leading-[0.9] mb-8 tracking-tighter">
               Tu reviendrais <br /> <span className="underline decoration-white/20">souvent ici ?</span>
@@ -135,32 +160,10 @@ const Home = () => {
             <p className="text-white/90 text-lg font-medium mb-12 max-w-md leading-relaxed">
               Dis-nous cash si tu trouves ça utile. Ton avis nous aide à construire le futur de l'UM6P.
             </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl">
-                <Users className="mb-3 text-white/80" size={24} />
-                <p className="font-black text-[10px] uppercase tracking-[0.2em]">Communauté</p>
-                <p className="text-[10px] text-white/60 font-medium">Rejoins les pionniers</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl">
-                <Zap className="mb-3 text-white/80" size={24} />
-                <p className="font-black text-[10px] uppercase tracking-[0.2em]">Zéro Frais</p>
-                <p className="text-[10px] text-white/60 font-medium">Direct d'étudiant à étudiant</p>
-              </div>
-            </div>
           </div>
 
           <div className="md:w-1/2 w-full relative">
-            <div className="absolute -top-4 -right-4 bg-[#3D332D] text-white text-[10px] font-black px-6 py-2 rounded-xl rotate-12 z-20 shadow-2xl border border-white/10 uppercase tracking-[0.2em]">
-              Beta Mode
-            </div>
-
             <div className="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-3xl relative z-10">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-[#FDFBF9] border border-[#D7CDC1] flex items-center justify-center text-2xl">💬</div>
-                <h3 className="text-3xl font-[1000] tracking-tighter text-[#3D332D]">Feedback Cash</h3>
-              </div>
-
               <form onSubmit={handleSendFeedback} className="space-y-6">
                 <textarea 
                   value={feedbackText}
@@ -168,7 +171,6 @@ const Home = () => {
                   placeholder="Qu'est-ce qui te ferait visiter le site tous les jours ?"
                   className="w-full bg-[#FDFBF9] border border-[#D7CDC1] rounded-3xl p-6 min-h-[150px] focus:outline-none focus:border-[#C59473] transition-all text-[#3D332D] font-semibold placeholder:text-[#3D332D]/20 resize-none shadow-inner"
                 />
-
                 <button 
                   type="submit"
                   disabled={isSending}
@@ -183,7 +185,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* --- FOOTER ÉPURÉ --- */}
+      {/* --- FOOTER --- */}
       <footer className="py-20 bg-white border-t border-[#D7CDC1]/20">
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center">
           <div className="text-3xl font-[1000] tracking-tighter text-[#3D332D] mb-4">

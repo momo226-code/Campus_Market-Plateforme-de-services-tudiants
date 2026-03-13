@@ -1,7 +1,6 @@
-import { GraduationCap, Car, Palette, Code, Camera, Coffee, ArrowRight, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { GraduationCap, Car, Palette, Code, Coffee, ArrowRight, Sparkles } from "lucide-react";
 
-// On harmonise les noms avec ceux du formulaire AddService
+// On garde tes catégories avec les mêmes noms que dans ta base MongoDB
 const categories = [
   { id: 1, name: "Cours & Tutorat", icon: <GraduationCap size={32} />, count: "12 services", slug: "Cours & Tutorat", color: "bg-[#C59473]/10" },
   { id: 2, name: "Transport", icon: <Car size={32} />, count: "8 services", slug: "Transport", color: "bg-[#3D332D]/5" },
@@ -11,13 +10,22 @@ const categories = [
   { id: 6, name: "Cuisine", icon: <Coffee size={32} />, count: "20 services", slug: "Cuisine", color: "bg-[#D7CDC1]/20" },
 ];
 
-const CategorySection = () => {
-  const navigate = useNavigate();
-
+const CategorySection = ({ onSelectCategory, activeCategory }) => {
+  
   const handleExplore = (slug) => {
-    // On navigue vers une page d'exploration avec la catégorie en paramètre
-    // Exemple: /explore?category=Cuisine
-    navigate(`/explore?category=${encodeURIComponent(slug)}`);
+    // Si on clique sur la catégorie déjà active, on retire le filtre (toggle)
+    if (activeCategory === slug) {
+      onSelectCategory("");
+    } else {
+      // Sinon, on envoie le slug (ex: "Cours & Tutorat") à Home.jsx
+      onSelectCategory(slug);
+      
+      // Petit scroll automatique vers les services pour voir le résultat
+      const servicesSection = document.getElementById("services-list");
+      if (servicesSection) {
+        servicesSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
   return (
@@ -40,13 +48,19 @@ const CategorySection = () => {
         {categories.map((cat) => (
           <div 
             key={cat.id}
-            className="group relative bg-white border border-[#D7CDC1]/50 rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-[#3D332D]/5 hover:-translate-y-2 overflow-hidden"
+            onClick={() => handleExplore(cat.slug)} // Toute la carte devient cliquable
+            className={`group relative border rounded-[2.5rem] p-8 transition-all duration-500 cursor-pointer overflow-hidden
+              ${activeCategory === cat.slug 
+                ? "border-[#C59473] bg-[#C59473]/5 shadow-xl -translate-y-2" 
+                : "bg-white border-[#D7CDC1]/50 hover:shadow-2xl hover:shadow-[#3D332D]/5 hover:-translate-y-2"
+              }`}
           >
             {/* Background Decor */}
             <div className={`absolute top-0 right-0 w-32 h-32 ${cat.color} rounded-bl-[5rem] -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-110`}></div>
 
             <div className="relative z-10">
-              <div className="text-[#3D332D] mb-6 group-hover:text-[#C59473] transition-colors duration-300">
+              <div className={`mb-6 transition-colors duration-300 
+                ${activeCategory === cat.slug ? "text-[#C59473]" : "text-[#3D332D] group-hover:text-[#C59473]"}`}>
                 {cat.icon}
               </div>
               
@@ -57,15 +71,13 @@ const CategorySection = () => {
                 {cat.count}
               </p>
 
-              <button 
-                onClick={() => handleExplore(cat.slug)}
-                className="flex items-center gap-3 text-[#3D332D] font-black text-xs uppercase tracking-[0.15em] group/btn"
-              >
-                Explorer 
-                <div className="w-8 h-8 rounded-full bg-[#3D332D] text-white flex items-center justify-center group-hover/btn:bg-[#C59473] transition-all">
+              <div className="flex items-center gap-3 text-[#3D332D] font-black text-xs uppercase tracking-[0.15em]">
+                {activeCategory === cat.slug ? "Filtré" : "Explorer"}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all
+                  ${activeCategory === cat.slug ? "bg-[#C59473] text-white" : "bg-[#3D332D] text-white group-hover:bg-[#C59473]"}`}>
                   <ArrowRight size={14} />
                 </div>
-              </button>
+              </div>
             </div>
           </div>
         ))}
