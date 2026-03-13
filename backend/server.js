@@ -53,3 +53,9 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`Serveur local sur le port ${PORT}`);
   });
 }
+
+
+
+const feedbackRoutes = require("./routes/feedbackRoutes");
+// ...
+app.use("/api/feedbacks", feedbackRoutes);
