@@ -84,10 +84,25 @@ exports.deleteService = async (req, res) => {
   }
 };
 
-exports.getMyServices = async (req, res) => {
+exports.getServices = async (req, res) => {
   try {
-    const services = await Service.find({ userId: req.user.id });
-    res.json(services);
+    // 1. On récupère la catégorie depuis les paramètres de l'URL (?category=...)
+    const { category } = req.query;
+
+    // 2. On prépare le filtre
+    let filter = {};
+    if (category) {
+      // Si une catégorie est fournie, on cherche une correspondance exacte
+      filter.category = category;
+    }
+
+    // 3. On applique le filtre à la recherche MongoDB
+    const services = await Service.find(filter)
+      .populate("userId", "name email phone")
+      .sort({ createdAt: -1 }); // On trie par les plus récents
+
+    res.status(200).json(services);
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

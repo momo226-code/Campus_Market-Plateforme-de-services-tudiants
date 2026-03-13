@@ -1,11 +1,9 @@
 const mongoose = require("mongoose");
 
 const feedbackSchema = new mongoose.Schema({
-  userName: { type: String, default: "Anonyme" },
-  email: { type: String },
   comment: { type: String, required: true },
-  rating: { type: Number, min: 1, max: 5 },
-  categorySuggested: { type: String }, // Pour savoir quelle catégorie ils veulent ajouter
+  userName: { type: String, default: "Explorateur UM6P" },
+  rating: { type: Number, default: 5 },
   createdAt: { type: Date, default: Date.now }
 });
 
