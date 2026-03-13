@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   createService,
   getServices,
-  getMyServices, // 👈 1. Ajoute l'import de la nouvelle fonction
+  getServiceById, // 👈 AJOUTE CET IMPORT
+  getMyServices,
   updateService,
   deleteService
 } = require("../controllers/serviceController");
@@ -12,11 +13,12 @@ const {
 const authMiddleware = require("../middleware/authMiddleware");
 
 // --- ROUTES DU DASHBOARD ---
-// C'est cette ligne qui manquait ! Elle doit être AVANT les routes avec :id
 router.get("/me", authMiddleware, getMyServices); 
 
 // --- ROUTES PUBLIQUES ---
 router.get("/", getServices);
+// 👈 AJOUTE CETTE ROUTE pour que la page "Modifier" puisse lire les données
+router.get("/:id", getServiceById); 
 
 // --- ROUTES PROTÉGÉES ---
 router.post("/", authMiddleware, createService);
