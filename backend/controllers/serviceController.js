@@ -75,3 +75,16 @@ exports.deleteService = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// 6. RÉCUPÉRER UN SERVICE PAR SON ID (Celle qui manquait !)
+exports.getServiceById = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id).populate("userId", "name email");
+    if (!service) {
+      return res.status(404).json({ message: "Service non trouvé" });
+    }
+    res.status(200).json(service);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
