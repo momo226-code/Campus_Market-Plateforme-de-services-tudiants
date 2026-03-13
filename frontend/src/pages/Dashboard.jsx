@@ -1,168 +1,95 @@
 import { useEffect, useState } from "react";
+import { Edit3, Trash2, Plus, Layout, ShoppingBag, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 import API from "../services/api";
 
 const Dashboard = () => {
-  const [services, setServices] = useState([]);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    category: ""
-  });
+  const [myServices, setMyServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [loading, setLoading] = useState(false);
-
-  const fetchServices = async () => {
-    try {
-      const res = await API.get("/services/mine");
-      setServices(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
+  // Imaginons que ton API ait une route pour récupérer les services de l'utilisateur connecté
   useEffect(() => {
-    fetchServices();
+    API.get("/services/me")
+      .then(res => {
+        setMyServices(res.data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      await API.post("/services", form);
-      setForm({ title: "", description: "", price: "", category: "" });
-      fetchServices();
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await API.delete(`/services/${id}`);
-      fetchServices();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   return (
-    <div className="pt-24 px-6 max-w-7xl mx-auto">
-
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-bold">Mon Dashboard</h1>
-
-        <span className="bg-blue-600/20 text-blue-400 px-4 py-1 rounded-full text-sm">
-          {services.length} services
-        </span>
-      </div>
-
-      {/* MES SERVICES */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {services.map((service) => (
-          <div
-            key={service._id}
-            className="bg-slate-900 border border-slate-800 rounded-2xl p-6 
-                       hover:border-blue-500 transition-all duration-300"
-          >
-            <h3 className="text-lg font-semibold mb-2">
-              {service.title}
-            </h3>
-
-            <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-              {service.description}
-            </p>
-
-            <div className="flex justify-between items-center mb-4">
-              <span className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">
-                {service.price} DH
-              </span>
-
-              <span className="text-xs text-gray-500">
-                {service.category}
-              </span>
-            </div>
-
-            <button
-              onClick={() => handleDelete(service._id)}
-              className="w-full bg-red-600/20 text-red-400 py-2 rounded-lg 
-                         hover:bg-red-600 hover:text-white transition"
-            >
-              Supprimer
-            </button>
+    <div className="min-h-screen bg-[#FDFBF9] pt-32 pb-20 px-6">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* --- HEADER DU DASHBOARD --- */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+          <div>
+            <h1 className="text-5xl font-[1000] tracking-tighter text-[#3D332D]">
+              Mon Studio<span className="text-[#C59473]">.</span>
+            </h1>
+            <p className="text-[#3D332D]/50 font-medium">Gère tes talents et tes activités sur le campus.</p>
           </div>
-        ))}
-      </div>
+          <Link to="/add-service" className="bg-[#3D332D] text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 hover:bg-[#C59473] transition-all shadow-xl shadow-[#3D332D]/10">
+            <Plus size={18} /> Nouveau Service
+          </Link>
+        </div>
 
-      {/* AJOUT SERVICE */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl max-w-3xl">
+        {/* --- GRILLE DE STATS --- */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <StatCard icon={<Layout />} label="Services" value={myServices.length} color="bg-[#C59473]/10 text-[#C59473]" />
+          <StatCard icon={<Eye />} label="Vues totales" value="124" color="bg-[#3D332D]/5 text-[#3D332D]" />
+          <StatCard icon={<ShoppingBag />} label="Commandes" value="12" color="bg-[#D7CDC1]/30 text-[#3D332D]" />
+        </div>
 
-        <h2 className="text-2xl font-semibold mb-6">
-          Ajouter un service
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          <input
-            name="title"
-            placeholder="Titre"
-            value={form.title}
-            onChange={handleChange}
-            className="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 
-                       focus:border-blue-500 focus:outline-none transition"
-          />
-
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 
-                       focus:border-blue-500 focus:outline-none transition"
-          />
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <input
-              name="price"
-              type="number"
-              placeholder="Prix"
-              value={form.price}
-              onChange={handleChange}
-              className="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 
-                         focus:border-blue-500 focus:outline-none transition"
-            />
-
-            <input
-              name="category"
-              placeholder="Catégorie"
-              value={form.category}
-              onChange={handleChange}
-              className="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 
-                         focus:border-blue-500 focus:outline-none transition"
-            />
+        {/* --- LISTE DES SERVICES --- */}
+        <div className="bg-white border border-[#D7CDC1]/50 rounded-[2.5rem] overflow-hidden shadow-sm">
+          <div className="p-8 border-b border-[#D7CDC1]/30 flex justify-between items-center">
+            <h3 className="font-black uppercase tracking-widest text-xs text-[#3D332D]">Mes Annonces</h3>
           </div>
+          
+          <div className="divide-y divide-[#D7CDC1]/20">
+            {myServices.length > 0 ? myServices.map(service => (
+              <div key={service._id} className="p-6 flex flex-col md:flex-row items-center justify-between hover:bg-[#FDFBF9] transition-colors gap-4">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                  <div className="w-16 h-16 bg-[#3D332D] rounded-2xl overflow-hidden shrink-0">
+                    <img src={service.image} alt="" className="w-full h-full object-cover opacity-80" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#3D332D] leading-tight">{service.title}</h4>
+                    <p className="text-[#C59473] font-black text-sm">{service.price} DH</p>
+                  </div>
+                </div>
 
-          <button
-            disabled={loading}
-            className="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg 
-                       font-medium transition disabled:opacity-50"
-          >
-            {loading ? "Ajout en cours..." : "Ajouter"}
-          </button>
-
-        </form>
+                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                  <button className="flex-1 md:flex-none p-3 bg-[#FDFBF9] border border-[#D7CDC1] text-[#3D332D] rounded-xl hover:bg-[#3D332D] hover:text-white transition-all">
+                    <Edit3 size={18} />
+                  </button>
+                  <button className="flex-1 md:flex-none p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <div className="p-20 text-center text-[#3D332D]/30 italic font-medium">
+                Tu n'as pas encore proposé de service.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
     </div>
   );
 };
+
+// Petit composant interne pour les stats
+const StatCard = ({ icon, label, value, color }) => (
+  <div className={`p-8 rounded-[2rem] ${color} flex items-center gap-6`}>
+    <div className="p-4 bg-white/50 rounded-2xl shadow-sm">{icon}</div>
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{label}</p>
+      <p className="text-3xl font-[1000] tracking-tighter">{value}</p>
+    </div>
+  </div>
+);
 
 export default Dashboard;
