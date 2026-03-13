@@ -107,3 +107,17 @@ exports.getServices = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+// Récupérer uniquement MES services (pour le Dashboard)
+exports.getMyServices = async (req, res) => {
+  try {
+    // req.user.id vient de ton middleware d'authentification (token)
+    const myServices = await Service.find({ userId: req.user.id })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(myServices);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
