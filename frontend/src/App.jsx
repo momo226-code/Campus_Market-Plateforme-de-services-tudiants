@@ -1,34 +1,26 @@
-import { Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import AddService from "./pages/AddService";
-import EditService from "./pages/EditService";
-import Dashboard from "./pages/Dashboard";
-import Marketplace from "./pages/Marketplace"; // 👈 Import
-import Cart from "./pages/Cart";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Outlet } from "react-router-dom";
+import Navbar from "./Navbar";
 
-function App() {
+const Layout = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="marketplace" element={<Marketplace />} /> {/* 👈 Nouvelle Route */}
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="cart" element={<Cart />} />
+    <div className="min-h-screen bg-[#FDFBF9]">
+      {/* Navbar fixe avec backdrop-blur déjà géré dans son composant */}
+      <Navbar />
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="add-service" element={<AddService />} />
-          <Route path="edit-service/:id" element={<EditService />} /> 
-        </Route>
-      </Route>
-      <Route path="*" element={<Home />} />
-    </Routes>
+      {/* pt-24 : Padding adapté pour mobile (la navbar y est plus courte)
+          md:pt-32 : On retrouve ton padding généreux sur ordinateur
+          px-4 : Marges de sécurité sur les côtés
+          overflow-x-hidden : Sécurité contre les débordements horizontaux
+      */}
+      <main className="pt-24 md:pt-32 pb-10 px-4 md:px-6 max-w-7xl mx-auto overflow-x-hidden">
+        <div className="animate-in fade-in duration-500">
+           <Outlet /> 
+        </div>
+      </main>
+
+      {/* On pourrait imaginer un petit message de bas de page ici */}
+    </div>
   );
-}
+};
 
-export default App;
+export default Layout;
