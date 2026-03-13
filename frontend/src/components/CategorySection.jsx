@@ -1,17 +1,24 @@
-import { GraduationCap, Car, Palette, Code, Camera, Coffee, ArrowRight } from "lucide-react";
+import { GraduationCap, Car, Palette, Code, Camera, Coffee, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// On harmonise les noms avec ceux du formulaire AddService
 const categories = [
-  { id: 1, name: "Soutien Scolaire", icon: <GraduationCap size={32} />, count: "12 services", slug: "academique", color: "bg-[#C59473]/10" },
-  { id: 2, name: "Transport / Covoit", icon: <Car size={32} />, count: "8 services", slug: "transport", color: "bg-[#3D332D]/5" },
-  { id: 3, name: "Design & Media", icon: <Palette size={32} />, count: "15 services", slug: "design", color: "bg-[#D7CDC1]/20" },
-  { id: 4, name: "Dev & Tech", icon: <Code size={32} />, count: "10 services", slug: "tech", color: "bg-[#C59473]/10" },
-  { id: 5, name: "Photographie", icon: <Camera size={32} />, count: "5 services", slug: "photo", color: "bg-[#3D332D]/5" },
-  { id: 6, name: "Lifestyle & Food", icon: <Coffee size={32} />, count: "20 services", slug: "lifestyle", color: "bg-[#D7CDC1]/20" },
+  { id: 1, name: "Cours & Tutorat", icon: <GraduationCap size={32} />, count: "12 services", slug: "Cours & Tutorat", color: "bg-[#C59473]/10" },
+  { id: 2, name: "Transport", icon: <Car size={32} />, count: "8 services", slug: "Transport", color: "bg-[#3D332D]/5" },
+  { id: 3, name: "Art & Design", icon: <Palette size={32} />, count: "15 services", slug: "Art & Design", color: "bg-[#D7CDC1]/20" },
+  { id: 4, name: "Technologie", icon: <Code size={32} />, count: "10 services", slug: "Technologie", color: "bg-[#C59473]/10" },
+  { id: 5, name: "Beauté & Soins", icon: <Sparkles size={32} />, count: "5 services", slug: "Beauté & Soins", color: "bg-[#3D332D]/5" },
+  { id: 6, name: "Cuisine", icon: <Coffee size={32} />, count: "20 services", slug: "Cuisine", color: "bg-[#D7CDC1]/20" },
 ];
 
 const CategorySection = () => {
   const navigate = useNavigate();
+
+  const handleExplore = (slug) => {
+    // On navigue vers une page d'exploration avec la catégorie en paramètre
+    // Exemple: /explore?category=Cuisine
+    navigate(`/explore?category=${encodeURIComponent(slug)}`);
+  };
 
   return (
     <section className="py-20 px-6 max-w-7xl mx-auto">
@@ -51,7 +58,7 @@ const CategorySection = () => {
               </p>
 
               <button 
-                onClick={() => navigate(`/services/${cat.slug}`)}
+                onClick={() => handleExplore(cat.slug)}
                 className="flex items-center gap-3 text-[#3D332D] font-black text-xs uppercase tracking-[0.15em] group/btn"
               >
                 Explorer 

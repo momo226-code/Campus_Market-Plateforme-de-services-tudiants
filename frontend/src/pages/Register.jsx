@@ -1,7 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
-import { User, Mail, Lock, Phone, UserPlus, Star } from "lucide-react";
+import { User, Mail, Lock, Phone, UserPlus, Star, ArrowRight } from "lucide-react";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -13,7 +13,6 @@ const Register = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,24 +23,30 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
+    // 1. Validation de base
     if (!form.name || !form.email || !form.password || !form.phone) {
       return setError("Veuillez remplir tous les champs.");
     }
 
-   try {
-  setLoading(true);
-  await API.post("/auth/register", form);
-  
-  // ICI : On envoie l'information de succès à la page Login
-  navigate("/login", { 
-    state: { success: "Ton compte Ventura a été créé avec succès ! Connecte-toi vite." } 
-  });
+    // 2. Validation de l'email institutionnel
+    if (!form.email.endsWith("@um6p.ma")) {
+      return setError("Veuillez utiliser votre adresse @um6p.ma");
+    }
 
-} catch (error) {
-  setError("Erreur lors de la création du compte.");
-} finally {
-  setLoading(false);
-}
+    try {
+      setLoading(true);
+      await API.post("/auth/register", form);
+      
+      // 3. Redirection avec message de succès vers Login
+      navigate("/login", { 
+        state: { success: "Ton compte Ventura a été créé ! Tu peux maintenant te connecter." } 
+      });
+
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur lors de la création du compte.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,7 +74,7 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-bold flex items-center gap-2">
+              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm font-bold flex items-center gap-2 animate-shake">
                 <Star size={16} fill="currentColor" /> {error}
               </div>
             )}
@@ -93,13 +98,13 @@ const Register = () => {
 
               {/* Email */}
               <div className="relative group">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#3D332D]/40 ml-4 mb-1 block">Email</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#3D332D]/40 ml-4 mb-1 block">Email UM6P</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D332D]/30 group-focus-within:text-[#C59473] transition-colors" size={18} />
                   <input
                     name="email"
                     type="email"
-                    placeholder="etudiant@um6p.ma"
+                    placeholder="prenom.nom@um6p.ma"
                     onChange={handleChange}
                     className="w-full pl-12 pr-4 py-3.5 bg-[#D7CDC1]/10 border border-transparent rounded-2xl focus:border-[#C59473] focus:bg-white focus:outline-none transition-all font-medium text-[#3D332D] text-sm"
                     required
@@ -144,7 +149,7 @@ const Register = () => {
               disabled={loading}
               className="w-full bg-[#3D332D] hover:bg-[#C59473] text-white py-4.5 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-[#3D332D]/20 flex items-center justify-center gap-3 group disabled:opacity-50 mt-6"
             >
-              {loading ? "Traitement..." : (
+              {loading ? "Création du compte..." : (
                 <>
                   Créer mon accès <UserPlus size={18} className="group-hover:translate-x-1 transition-transform" />
                 </>

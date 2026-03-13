@@ -1,162 +1,198 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, MessageSquareQuote } from "lucide-react";
+import { ArrowRight, Star, Send, Users, Zap, Layout } from "lucide-react";
 import ServiceCard from "../components/ServiceCard";
 import CategorySection from "../components/CategorySection";
 
 const Home = () => {
   const [services, setServices] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    // Chargement simultané des services et des avis
-    Promise.all([
-      API.get("/services"),
-      API.get("/feedbacks")
-    ])
-    .then(([resServices, resFeedbacks]) => {
-      setServices(resServices.data);
-      // On affiche les 3 avis les mieux notés ou les plus récents
-      setFeedbacks(resFeedbacks.data.slice(0, 3));
-      setLoading(false);
-    })
-    .catch((err) => {
-      console.error("Erreur de chargement des données:", err);
-      setLoading(false);
-    });
+    API.get("/services")
+      .then((res) => {
+        setServices(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Erreur de chargement:", err);
+        setLoading(false);
+      });
   }, []);
 
+  const handleSendFeedback = async (e) => {
+    e.preventDefault();
+    if (!feedbackText.trim()) return;
+    setIsSending(true);
+    try {
+      await API.post("/feedbacks", { 
+        comment: feedbackText,
+        userName: "Explorateur UM6P",
+        rating: 5 
+      });
+      alert("Ton feedback a été envoyé cash ! ✨");
+      setFeedbackText("");
+    } catch (err) {
+      alert("Erreur de connexion au backend. Vérifie Vercel !");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FDFBF9] text-[#3D332D]">
+    <div className="min-h-screen bg-[#FDFBF9] text-[#3D332D] overflow-x-hidden">
       
-      {/* --- SECTION HERO : L'IDENTITÉ VENTURA --- */}
-      <section className="relative pt-40 pb-20 overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-[#D7CDC1]/20"></div>
+      {/* --- SECTION HERO --- */}
+      <section className="relative pt-40 pb-32 overflow-hidden bg-white">
+        {/* Le dégradé subtil vers la couleur sable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-[#D7CDC1]/30"></div>
         
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 bg-[#C59473]/10 text-[#C59473] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-8 border border-[#C59473]/20">
-            <Star size={14} fill="currentColor" />
-            Le Marché des Talents UM6P
+        <div className="max-w-7xl mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="text-left animate-in fade-in slide-in-from-left duration-700">
+            <div className="inline-flex items-center gap-2 bg-[#C59473]/10 text-[#C59473] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8 border border-[#C59473]/20">
+              <Star size={12} fill="currentColor" />
+              Le Marché des Talents UM6P
+            </div>
+            <h1 className="text-7xl md:text-8xl lg:text-9xl font-[1000] tracking-tighter leading-[0.8] mb-8">
+              VENTURA<span className="text-[#C59473]">.</span>
+            </h1>
+            <p className="text-xl text-[#3D332D]/70 max-w-lg mb-12 font-medium leading-relaxed">
+              La plateforme où les étudiants de l'UM6P s'entraident. 
+              <span className="block text-[#3D332D] font-bold italic mt-2">Ton talent a de la valeur ici.</span>
+            </p>
+            <div className="flex flex-col sm:flex-row gap-5">
+              <Link to="/add-service" className="bg-[#3D332D] text-white px-10 py-5 rounded-2xl shadow-2xl shadow-[#3D332D]/20 hover:bg-[#C59473] transition-all font-black uppercase text-xs tracking-widest group flex items-center justify-center gap-3">
+                Proposer mon service
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
 
-          <h1 className="text-7xl md:text-9xl font-[1000] tracking-tighter leading-none mb-8 text-[#3D332D]">
-            VENTURA<span className="text-[#C59473]">.</span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-[#3D332D]/70 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-            La plateforme où les étudiants de l'UM6P s'entraident. <br/>
-            <span className="text-[#3D332D] font-bold italic">Ton talent a de la valeur ici.</span>
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-5 justify-center">
-            <Link to="/add-service" className="bg-[#3D332D] text-white px-10 py-5 rounded-2xl shadow-xl shadow-[#3D332D]/10 hover:bg-[#C59473] transition-all font-bold group flex items-center justify-center gap-3">
-              Proposer mon service
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <a href="#categories" className="bg-white text-[#3D332D] border-2 border-[#D7CDC1] px-10 py-5 rounded-2xl hover:bg-[#D7CDC1]/20 transition-all font-bold">
-              Explorer les catégories
-            </a>
+          {/* Illustration style Ventura */}
+          <div className="relative hidden lg:block animate-in zoom-in duration-1000">
+            <div className="w-[450px] h-[450px] bg-[#D7CDC1]/40 rounded-[4rem] rotate-6 absolute inset-0 -z-10"></div>
+            <div className="w-[450px] h-[450px] bg-[#3D332D] rounded-[4rem] -rotate-3 flex items-center justify-center shadow-3xl">
+              <Layout size={180} className="text-[#C59473]/20" />
+            </div>
           </div>
+        </div>
+
+        {/* WAVE DIVIDER (Comme sur tes images) */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[100px] fill-[#FDFBF9]">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.43,147.69,126.35,232.4,108.47c51.92-11,98.37-33.84,149-47.5s101.25-24,159.58-15.54"></path>
+          </svg>
         </div>
       </section>
 
-      {/* --- SECTION CATÉGORIES (Navigation Principale) --- */}
-      <div id="categories">
+      {/* --- SECTION CATÉGORIES --- */}
+      <div id="categories" className="py-10">
         <CategorySection />
       </div>
 
-      {/* --- SECTION SERVICES RÉCENTS (Les pépites) --- */}
+      {/* --- SECTION SERVICES RÉCENTS --- */}
       <section className="py-24 bg-[#D7CDC1]/10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-end mb-16">
             <div>
-              <h2 className="text-3xl font-[1000] tracking-tighter text-[#3D332D]">
-                Dernières pépites
-              </h2>
-              <p className="text-[#3D332D]/50 text-sm font-medium mt-1">Les services fraîchement ajoutés sur le campus.</p>
+              <h2 className="text-4xl font-[1000] tracking-tighter">Dernières pépites<span className="text-[#C59473]">.</span></h2>
+              <p className="text-[#3D332D]/40 font-black uppercase text-[10px] tracking-widest mt-2">Fraîchement arrivés sur le campus</p>
             </div>
-            <div className="w-12 h-1 bg-[#C59473] rounded-full hidden md:block"></div>
+            <div className="w-20 h-1 bg-[#C59473] rounded-full hidden md:block mb-4"></div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {loading ? (
-              <p className="col-span-3 text-center py-20 text-[#3D332D]/40 font-bold italic">
-                Chargement des pépites...
-              </p>
-            ) : services.length === 0 ? (
-              <div className="col-span-3 text-center py-16 border-2 border-dashed border-[#D7CDC1] rounded-[2.5rem] bg-white/50">
-                <p className="text-[#3D332D]/40 font-bold italic uppercase tracking-widest text-[10px]">
-                  Aucun service récent
-                </p>
+              <div className="col-span-3 text-center py-20">
+                <div className="inline-block animate-spin w-8 h-8 border-4 border-[#C59473] border-t-transparent rounded-full mb-4"></div>
+                <p className="opacity-40 font-black uppercase tracking-widest text-[10px]">Chargement des talents...</p>
               </div>
-            ) : (
-              services.slice(0, 3).map((service) => (
-                <ServiceCard key={service._id} service={service} />
-              ))
-            )}
+            ) : services.slice(0, 3).map((service) => (
+              <ServiceCard key={service._id} service={service} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* --- SECTION FEEDBACK : L'AVIS DU CAMPUS --- */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-[1000] tracking-tighter text-[#3D332D]">
-              Le Campus s'exprime<span className="text-[#C59473]">.</span>
+      {/* --- SECTION FEEDBACK CASH --- */}
+      <section className="py-32 px-6 bg-white relative">
+        {/* Wave inversée pour l'entrée dans la section feedback */}
+        <div className="absolute top-0 left-0 w-full overflow-hidden leading-[0] transform rotate-180 -translate-y-[99%]">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[80px] fill-white">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.43,147.69,126.35,232.4,108.47c51.92-11,98.37-33.84,149-47.5s101.25-24,159.58-15.54"></path>
+          </svg>
+        </div>
+
+        <div className="max-w-6xl mx-auto bg-[#C59473] rounded-[4rem] p-10 md:p-20 flex flex-col md:flex-row items-center gap-16 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(197,148,115,0.3)]">
+          
+          <div className="md:w-1/2 text-white">
+            <h2 className="text-5xl md:text-6xl font-[1000] italic leading-[0.9] mb-8 tracking-tighter">
+              Tu reviendrais <br /> <span className="underline decoration-white/20">souvent ici ?</span>
             </h2>
-            <p className="text-[#3D332D]/50 font-medium mt-2">Ce que les étudiants pensent de Ventura.</p>
+            <p className="text-white/90 text-lg font-medium mb-12 max-w-md leading-relaxed">
+              Dis-nous cash si tu trouves ça utile. Ton avis nous aide à construire le futur de l'UM6P.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl">
+                <Users className="mb-3 text-white/80" size={24} />
+                <p className="font-black text-[10px] uppercase tracking-[0.2em]">Communauté</p>
+                <p className="text-[10px] text-white/60 font-medium">Rejoins les pionniers</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl">
+                <Zap className="mb-3 text-white/80" size={24} />
+                <p className="font-black text-[10px] uppercase tracking-[0.2em]">Zéro Frais</p>
+                <p className="text-[10px] text-white/60 font-medium">Direct d'étudiant à étudiant</p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {feedbacks.length > 0 ? (
-              feedbacks.map((fb) => (
-                <div key={fb._id} className="bg-[#FDFBF9] p-8 rounded-[2.5rem] border border-[#D7CDC1]/30 relative group hover:border-[#C59473]/50 transition-all duration-300">
-                  <MessageSquareQuote className="absolute top-6 right-8 text-[#C59473]/10 group-hover:text-[#C59473]/20 transition-colors" size={40} />
-                  
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={12} className={i < fb.rating ? "text-[#C59473] fill-[#C59473]" : "text-[#D7CDC1]"} />
-                    ))}
-                  </div>
+          <div className="md:w-1/2 w-full relative">
+            <div className="absolute -top-4 -right-4 bg-[#3D332D] text-white text-[10px] font-black px-6 py-2 rounded-xl rotate-12 z-20 shadow-2xl border border-white/10 uppercase tracking-[0.2em]">
+              Beta Mode
+            </div>
 
-                  <p className="text-[#3D332D] font-medium leading-relaxed italic mb-8">
-                    "{fb.comment}"
-                  </p>
+            <div className="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-3xl relative z-10">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 rounded-2xl bg-[#FDFBF9] border border-[#D7CDC1] flex items-center justify-center text-2xl">💬</div>
+                <h3 className="text-3xl font-[1000] tracking-tighter text-[#3D332D]">Feedback Cash</h3>
+              </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#3D332D] flex items-center justify-center text-white text-[10px] font-black">
-                      {fb.userName?.charAt(0) || "U"}
-                    </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-[#3D332D]">
-                      {fb.userName || "Anonyme"}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="col-span-3 text-center text-[#3D332D]/30 italic font-medium">
-                Pas encore d'avis partagés.
-              </p>
-            )}
-          </div>
+              <form onSubmit={handleSendFeedback} className="space-y-6">
+                <textarea 
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="Qu'est-ce qui te ferait visiter le site tous les jours ?"
+                  className="w-full bg-[#FDFBF9] border border-[#D7CDC1] rounded-3xl p-6 min-h-[150px] focus:outline-none focus:border-[#C59473] transition-all text-[#3D332D] font-semibold placeholder:text-[#3D332D]/20 resize-none shadow-inner"
+                />
 
-          <div className="mt-16 text-center">
-            <Link to="/feedback" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#C59473] hover:text-[#3D332D] transition-colors group">
-              Partager mon expérience sur le prototype
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+                <button 
+                  type="submit"
+                  disabled={isSending}
+                  className="w-full bg-[#3D332D] hover:bg-black text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-[0.4em] transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-xl shadow-[#3D332D]/20 group"
+                >
+                  {isSending ? "ENVOI..." : "ENVOYER MON AVIS"}
+                  <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer minimaliste */}
-      <footer className="py-12 border-t border-[#D7CDC1]/30 text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3D332D]/30">
-          © 2026 Ventura — Plateforme de services étudiants UM6P
-        </p>
+      {/* --- FOOTER ÉPURÉ --- */}
+      <footer className="py-20 bg-white border-t border-[#D7CDC1]/20">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center">
+          <div className="text-3xl font-[1000] tracking-tighter text-[#3D332D] mb-4">
+            VENTURA<span className="text-[#C59473]">.</span>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#3D332D]/30">
+            © 2026 — Built for UM6P Students
+          </p>
+        </div>
       </footer>
     </div>
   );

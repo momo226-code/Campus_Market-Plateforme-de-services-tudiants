@@ -1,7 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { Mail, Lock, ArrowRight, Star, CheckCircle } from "lucide-react"; // Ajout de CheckCircle
+import { Mail, Lock, ArrowRight, Star, CheckCircle } from "lucide-react";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -24,9 +24,15 @@ const Login = () => {
     try {
       setLoading(true);
       const res = await API.post("/auth/login", form);
+      
+      // Stockage du token pour rester connecté
       localStorage.setItem("token", res.data.token);
-      const redirectTo = location.state?.from?.pathname || "/";
+      
+      // MODIFICATION : On redirige vers le Dashboard par défaut après connexion
+      // Si l'utilisateur a été intercepté en voulant aller ailleurs, on respecte son choix initial
+      const redirectTo = location.state?.from?.pathname || "/dashboard"; 
       navigate(redirectTo);
+      
     } catch (error) {
       setError("Email ou mot de passe incorrect.");
     } finally {
@@ -56,7 +62,7 @@ const Login = () => {
           <p className="text-[#3D332D]/60 font-medium mt-2 italic">L'excellence de l'UM6P en un clic.</p>
         </div>
 
-        {/* --- BLOC MESSAGE DE SUCCÈS (Nouveau) --- */}
+        {/* --- BLOC MESSAGE DE SUCCÈS --- */}
         {successMsg && (
           <div className="mb-6 bg-green-50 border border-green-100 text-green-600 p-4 rounded-2xl text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
             <CheckCircle size={20} />
@@ -76,6 +82,7 @@ const Login = () => {
             )}
 
             <div className="space-y-4">
+              {/* Email */}
               <div className="relative group">
                 <label className="text-[10px] font-black uppercase tracking-widest text-[#3D332D]/40 ml-4 mb-1 block">Email Campus</label>
                 <div className="relative">
@@ -91,6 +98,7 @@ const Login = () => {
                 </div>
               </div>
 
+              {/* Mot de passe */}
               <div className="relative group">
                 <label className="text-[10px] font-black uppercase tracking-widest text-[#3D332D]/40 ml-4 mb-1 block">Mot de passe</label>
                 <div className="relative">
@@ -108,6 +116,7 @@ const Login = () => {
             </div>
 
             <button
+              type="submit"
               disabled={loading}
               className="w-full bg-[#3D332D] hover:bg-[#C59473] text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-[#3D332D]/20 flex items-center justify-center gap-3 group disabled:opacity-50"
             >
