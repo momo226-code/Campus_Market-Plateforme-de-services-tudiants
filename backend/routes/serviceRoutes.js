@@ -4,25 +4,25 @@ const router = express.Router();
 const {
   createService,
   getServices,
-  getServiceById, // 👈 AJOUTE CET IMPORT
+  getServiceById,
   getMyServices,
   updateService,
   deleteService
 } = require("../controllers/serviceController");
 
 const authMiddleware = require("../middleware/authMiddleware");
+const upload = require("../config/cloudinary"); // ← AJOUT
 
 // --- ROUTES DU DASHBOARD ---
-router.get("/me", authMiddleware, getMyServices); 
+router.get("/me", authMiddleware, getMyServices);
 
 // --- ROUTES PUBLIQUES ---
 router.get("/", getServices);
-// 👈 AJOUTE CETTE ROUTE pour que la page "Modifier" puisse lire les données
-router.get("/:id", getServiceById); 
+router.get("/:id", getServiceById);
 
 // --- ROUTES PROTÉGÉES ---
-router.post("/", authMiddleware, createService);
-router.put("/:id", authMiddleware, updateService);
+router.post("/", authMiddleware, upload.single("image"), createService); // ← MODIFIÉ
+router.put("/:id", authMiddleware, upload.single("image"), updateService); // ← MODIFIÉ
 router.delete("/:id", authMiddleware, deleteService);
 
 module.exports = router;
