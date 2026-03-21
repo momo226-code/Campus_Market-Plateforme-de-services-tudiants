@@ -9,12 +9,30 @@ dotenv.config();
 
 const app = express();
 
-// Configuration CORS pour accepter ton futur frontend sur Vercel
+// ── CORS corrigé ──
+const allowedOrigins = [
+  "https://campus-market-plateforme-de-service-sandy.vercel.app",
+  "https://campus-market-plateforme-de-service-kohl.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
 app.use(cors({
-  origin: "*", 
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  origin: function (origin, callback) {
+    // Autorise les requêtes sans origin (Postman, mobile) + les origins listées
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 }));
+
+// Répondre aux preflight OPTIONS
+app.options("*", cors());
 
 app.use(express.json());
 
@@ -35,22 +53,20 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// ... (reste du code au dessus)
-
-// 1. Déclare tes routes AVANT l'export
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
-app.use("/api/feedbacks", require("./routes/feedbackRoutes")); // Import direct ou via variable
+app.use("/api/feedbacks", require("./routes/feedbackRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Campus-Market API is running 🚀");
 });
 
-// 2. Export pour Vercel (Doit être à la fin ou après les définitions de routes)
+// Export pour Vercel
 module.exports = app;
 
-// 3. Écoute locale uniquement
-if (process.env.NODE_ENV !== 'production') {
+// Écoute locale uniquement
+if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Serveur local sur le port ${PORT}`);
