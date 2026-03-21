@@ -7,9 +7,9 @@ dotenv.config();
 
 const app = express();
 
-// CORS — accepte tout (le plus simple et fiable)
+// CORS — accepte tout
 app.use(cors());
-app.options("*", cors());
+app.options("(.*)", cors());
 
 app.use(express.json());
 
