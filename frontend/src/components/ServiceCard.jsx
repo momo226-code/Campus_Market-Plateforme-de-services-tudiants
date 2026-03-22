@@ -75,17 +75,10 @@ const ServiceCard = ({ service }) => {
       <div className="p-4 sm:p-5 md:p-7 flex flex-col flex-grow">
 
         {/* Prestataire */}
-        <div className="flex items-center gap-2 mb-2 sm:mb-3">
-          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#E8603C]/10 flex items-center justify-center text-[#E8603C] flex-shrink-0">
-            <User size={10} />
-          </div>
-          <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-[#3D332D]/35 truncate">
-            {service.userId?.name || "Membre UM6P"}
-          </span>
-        </div>
+      
 
         {/* Titre */}
-        <h3 className="text-lg sm:text-xl md:text-2xl font-[1000] tracking-tighter text-[#3D332D] mb-1.5 sm:mb-2 group-hover:text-[#E8603C] transition-colors leading-tight">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-[1000] uppercase tracking-tighter text-[#3D332D] mb-1.5 sm:mb-2 group-hover:text-[#E8603C] transition-colors leading-tight">
           {service.title}
         </h3>
 

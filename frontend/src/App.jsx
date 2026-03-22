@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Cart from "./pages/Cart";
 import Marketplace from "./pages/Marketplace";
 import ProtectedRoute from "./components/ProtectedRoute";
+import About from "./pages/About";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="cart" element={<Cart />} />
+        <Route path="/about" element={<About />} />
 
         {/* Routes protégées */}
         <Route element={<ProtectedRoute />}>

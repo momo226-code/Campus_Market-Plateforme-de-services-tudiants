@@ -1,173 +1,282 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API from "../services/api";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Send, Sparkles } from "lucide-react";
+import { ArrowRight, Star, Send, Tag, Zap, Facebook, Instagram, Linkedin } from "lucide-react";
 import CategorySection from "../components/CategorySection";
-
-// Importation de l'image (Assure-toi qu'elle est dans src/assets/)
 import heroImg from "../assets/hero-image.jpg";
 
 const Home = () => {
+  const [services, setServices] = useState([]);
+  const [currentServiceIndex, setCurrentServiceIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [feedbackText, setFeedbackText] = useState("");
   const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await API.get("/services");
+        setServices(response.data.slice(0, 6));
+        setLoading(false);
+      } catch (err) {
+        console.error("Erreur services:", err);
+        setLoading(false);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    if (services.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentServiceIndex((prev) => (prev + 1) % services.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [services]);
 
   const handleSendFeedback = async (e) => {
     e.preventDefault();
     if (!feedbackText.trim()) return;
     setIsSending(true);
     try {
-      await API.post("/feedbacks", {
-        comment: feedbackText,
-        userName: "Explorateur UM6P",
-        rating: 5,
-      });
-      alert("Ton feedback a été envoyé cash ! ✨");
+      await API.post("/feedbacks", { comment: feedbackText, rating: 5 });
+      alert("Merci pour ton retour ! ✨");
       setFeedbackText("");
     } catch (err) {
-      alert("Erreur de connexion au backend. Vérifie la configuration !");
+      alert("Erreur lors de l'envoi.");
     } finally {
       setIsSending(false);
     }
   };
 
+  const badgeThemes = [
+    { bg: "bg-[#F2C94C]", text: "text-[#3D332D]", accent: "text-[#3D332D]" },
+    { bg: "bg-white",     text: "text-[#3D332D]", accent: "text-[#E8603C]" },
+    { bg: "bg-[#7A9E7E]", text: "text-white",     accent: "text-white"     },
+  ];
+
+  const currentSvc = services[currentServiceIndex];
+  const theme = badgeThemes[currentServiceIndex % badgeThemes.length];
+
+  const floatingAvatars = [
+    { initials: "SA", color: "#E8603C", top: "12%", left: "5%",   size: 60, rotate: -8 },
+    { initials: "MY", color: "#7A9E7E", top: "52%", left: "7%",   size: 52, rotate: 5  },
+    { initials: "IB", color: "#C59473", top: "78%", left: "20%",  size: 56, rotate: -4 },
+    { initials: "LH", color: "#E8603C", top: "10%", right: "5%",  size: 54, rotate: 7  },
+    { initials: "ZO", color: "#7A9E7E", top: "58%", right: "5%",  size: 62, rotate: -6 },
+    { initials: "AM", color: "#C59473", top: "78%", right: "16%", size: 50, rotate: 4  },
+  ];
+
   return (
-    <div className="min-h-screen text-[#3D332D] overflow-x-hidden bg-white">
-      
-      {/* ── SECTION HERO OPTIMISÉE ── */}
-      <section 
-        className="relative pt-24 sm:pt-36 md:pt-44 lg:pt-52 pb-12 sm:pb-20 overflow-hidden bg-white bg-cover bg-center"
-        style={{ 
-          backgroundImage: `linear-gradient(to bottom right, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.85), rgba(232, 96, 60, 0.05)), url(${heroImg})` 
+    <div className="min-h-screen text-[#3D332D] overflow-x-hidden" style={{ backgroundColor: "#F5E6C8" }}>
+
+      {/* ── HERO ── */}
+      <section
+        className="relative pt-24 sm:pt-36 md:pt-44 lg:pt-52 pb-0 overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(to bottom right, rgb(243, 234, 215), rgba(245,230,200,0.60)), url(${heroImg})`,
+          backgroundColor: "#F5E6C8",
         }}
       >
-        {/* Cercles décoratifs (cachés sur mobile pour la clarté) */}
-        <div className="hidden md:block absolute top-16 right-20 w-72 h-72 rounded-full bg-[#E8603C]/10 blur-3xl pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center pb-36">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
-          
-          {/* TEXTE : Centré sur mobile, à gauche sur PC */}
-          <div className="text-center lg:text-left order-1">
-            <div className="inline-flex items-center gap-2 bg-[#E8603C]/10 text-[#E8603C] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-[#E8603C]/20">
-              <Star size={11} fill="currentColor" />
-              Le Marché des Talents UM6P
+          {/* LEFT */}
+          <div className="text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-[#E8603C]/10 text-[#E8603C] px-4 py-1.5 rounded-full text-[10px] font-[1000] uppercase tracking-widest mb-6 border border-[#E8603C]/20">
+              <Star size={11} fill="currentColor" /> Le marché des talents UM6P
             </div>
-            
-            <h1 className="text-5xl xs:text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-[1000] tracking-tighter leading-[0.85] mb-6">
+            <h1 className="text-6xl xs:text-7xl md:text-8xl lg:text-9xl font-[1000] tracking-tighter leading-[0.85] mb-6 text-[#3D332D]">
               VEN<span className="text-[#C59473]">T</span>URA<span className="text-[#E8603C]">.</span>
             </h1>
-
-            <p className="text-base sm:text-lg md:text-xl text-[#3D332D]/70 max-w-lg mx-auto lg:mx-0 mb-10 font-medium leading-relaxed">
-              La plateforme d'entraide étudiante de l'UM6P. 
-              <span className="block text-[#3D332D] font-bold italic mt-1 text-[#E8603C]">Ton talent a de la valeur ici.</span>
+            <p className="text-base md:text-lg text-[#3D332D]/65 max-w-xl mx-auto lg:mx-0 mb-2 font-medium">
+              La plateforme exclusive d'échange de services pour la communauté UM6P.
             </p>
-
-            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 px-4 sm:px-0">
-              <Link
-                to="/add-service"
-                className="bg-[#3D332D] text-white px-8 py-5 rounded-2xl shadow-xl hover:bg-[#E8603C] transition-all font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 active:scale-95"
-              >
-                Vendre un talent <ArrowRight size={18} />
+            <p className="text-base md:text-lg text-[#3D332D] max-w-xl mx-auto lg:mx-0 mb-10 font-bold italic">
+              Ton talent a de la valeur ici. Postule pour financer tes projets !
+            </p>
+            <div className="flex justify-center lg:justify-start gap-4 flex-wrap">
+              <Link to="/add-service" className="bg-[#3D332D] text-white px-8 py-4 rounded-2xl shadow-xl hover:bg-[#E8603C] transition-all font-black uppercase text-xs tracking-widest flex items-center gap-3">
+                Vendre un talent <ArrowRight size={16} />
               </Link>
-              <Link
-                to="/marketplace"
-                className="border-2 border-[#7A9E7E] text-[#7A9E7E] px-8 py-5 rounded-2xl hover:bg-[#7A9E7E] hover:text-white transition-all font-black uppercase text-[10px] tracking-widest text-center active:scale-95"
-              >
-                Explorer
+              <Link to="/marketplace" className="border-2 border-[#3D332D]/30 text-[#3D332D] px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:border-[#E8603C] hover:text-[#E8603C] transition-all">
+                Explorer →
               </Link>
             </div>
           </div>
 
-          {/* VISUEL : S'adapte sur mobile sans disparaître */}
-          <div className="flex items-center justify-center relative order-2 mt-6 lg:mt-0 scale-90 xs:scale-100 sm:scale-110 lg:scale-100">
-            {/* Badge Talent */}
-            <div className="absolute -top-4 -left-2 sm:-top-8 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-5 border border-[#D7CDC1]/40 rotate-[-6deg] z-20">
-              <div className="text-[#E8603C] font-black text-[8px] sm:text-[10px] uppercase mb-1">Talent</div>
-              <div className="text-[#3D332D] font-[1000] text-sm sm:text-xl">Coaching Python</div>
-              <div className="text-[#7A9E7E] font-black text-[9px] sm:text-xs mt-1 text-right">150 DH</div>
-            </div>
-
-            {/* Image Card */}
-            <div 
-              className="w-64 h-64 xs:w-72 xs:h-72 xl:w-96 xl:h-96 rounded-[2.5rem] sm:rounded-[4rem] shadow-2xl relative overflow-hidden border-4 sm:border-8 border-white bg-cover bg-center rotate-2"
-              style={{ backgroundImage: `url(${heroImg})` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-[#3D332D]/70 via-transparent to-transparent" />
-              <Sparkles size={60} className="text-white/20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-              <div className="absolute bottom-5 left-0 right-0 px-6 z-10 text-center">
-                <div className="h-1 rounded-full bg-white/20 mb-2 max-w-[100px] mx-auto overflow-hidden">
-                   <div className="h-full w-3/4 bg-[#E8603C]" />
+          {/* RIGHT */}
+          <div className="flex items-center justify-center relative scale-90 sm:scale-100">
+            {!loading && currentSvc && (
+              <div
+                key={currentSvc._id}
+                className={`absolute -top-6 -right-4 ${theme.bg} ${theme.text} rounded-2xl shadow-2xl p-5 border border-[#D7CDC1]/40 rotate-[6deg] z-20`}
+              >
+                <div className={`${theme.accent} font-[1000] text-[10px] uppercase mb-1 tracking-widest flex items-center gap-1`}>
+                  <Tag size={12} /> {currentSvc.category}
                 </div>
-                <div className="text-white/80 text-[8px] font-black uppercase tracking-widest">50+ talents actifs</div>
+                <div className="font-[1000] text-xl leading-tight min-w-[140px]">{currentSvc.title}</div>
+                <div className="font-black text-xs mt-2 opacity-80">{currentSvc.price} DH</div>
               </div>
-            </div>
-
-            {/* Badge Livraison */}
-            <div className="absolute -bottom-2 -right-2 sm:-bottom-6 sm:-right-4 bg-[#F2C94C] rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-5 rotate-[5deg] z-20">
-              <div className="text-[#3D332D] font-black text-[8px] sm:text-[10px] uppercase mb-1">Livraison</div>
-              <div className="text-[#3D332D] font-[1000] text-sm sm:text-lg">Box Repas Maison</div>
-              <div className="text-[#3D332D]/60 font-black text-[9px] sm:text-xs mt-1">80 DH / box</div>
+            )}
+            <div
+              className="w-72 h-72 lg:w-96 lg:h-96 rounded-[4rem] shadow-2xl relative overflow-hidden border-8 border-white/70 rotate-2 bg-cover bg-center"
+              style={{ backgroundImage: `url(${currentSvc?.imageUrl || heroImg})` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-[#3D332D]/40 to-transparent" />
+              <div className="absolute bottom-6 left-0 right-0 text-center z-10">
+                <div className="text-white text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                  <Zap size={10} fill="#F2C94C" className="text-[#F2C94C]" /> 50+ Talents Actifs
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Vague adaptable */}
+        {/* Vague organique → beige */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
-          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[40px] sm:h-[80px] fill-[#F5ECD7]">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.43,147.69,126.35,232.4,108.47c51.92-11,98.37-33.84,149-47.5s101.25-24,159.58-15.54" />
+          <svg viewBox="0 0 1440 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" className="block w-full h-[100px] md:h-[160px]">
+            <path d="M0,180 L0,80 C120,120 240,160 400,130 C560,100 640,50 800,40 C960,30 1080,80 1200,100 C1320,120 1400,80 1440,65 L1440,180 Z" fill="#F5E6C8" />
+            <path d="M0,180 L0,120 C160,90 300,70 480,80 C660,90 760,130 920,140 C1080,150 1240,110 1440,100 L1440,180 Z" fill="#F5E6C8" opacity="0.6" />
           </svg>
         </div>
       </section>
 
-      {/* ── SECTION STATS ── */}
-      <section className="bg-[#F5ECD7] py-8 sm:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-3 gap-4 sm:gap-8 text-center">
-            <div className="bg-white/50 backdrop-blur-md p-4 sm:p-8 rounded-[2rem] border border-white/50">
-                <div className="text-3xl sm:text-5xl font-[1000] text-[#E8603C]">50+</div>
-                <div className="text-[8px] sm:text-[10px] font-black uppercase text-[#3D332D]/40 mt-2 tracking-widest">Talents</div>
+      {/* ── STATS ── */}
+      <section style={{ backgroundColor: "#F5E6C8" }} className="pt-6 pb-14">
+        <div className="max-w-2xl mx-auto px-4 grid grid-cols-3 gap-4 text-center">
+          {[
+            { val: "50+", label: "Talents", color: "#E8603C" },
+            { val: "6",   label: "Catégories", color: "#7A9E7E" },
+            { val: "UM6P",label: "Campus", color: "#C59473" },
+          ].map((s) => (
+            <div key={s.label} className="py-6 px-4 rounded-3xl border border-white/60" style={{ backgroundColor: "rgba(255,255,255,0.55)" }}>
+              <div className="text-3xl font-[1000]" style={{ color: s.color }}>{s.val}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest mt-1" style={{ color: "#3D332D", opacity: 0.4 }}>{s.label}</div>
             </div>
-            <div className="bg-white/50 backdrop-blur-md p-4 sm:p-8 rounded-[2rem] border border-white/50">
-                <div className="text-3xl sm:text-5xl font-[1000] text-[#7A9E7E]">6</div>
-                <div className="text-[8px] sm:text-[10px] font-black uppercase text-[#3D332D]/40 mt-2 tracking-widest">Catégories</div>
-            </div>
-            <div className="bg-white/50 backdrop-blur-md p-4 sm:p-8 rounded-[2rem] border border-white/50">
-                <div className="text-3xl sm:text-5xl font-[1000] text-[#C59473]">UM6P</div>
-                <div className="text-[8px] sm:text-[10px] font-black uppercase text-[#3D332D]/40 mt-2 tracking-widest">Campus</div>
-            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── SECTION CATÉGORIES ── */}
-      <section className="bg-[#F5ECD7] pb-10">
+      {/* ── CATÉGORIES ── */}
+      <section style={{ backgroundColor: "#F5E6C8" }} className="pb-20">
         <CategorySection />
       </section>
 
-      {/* ── SECTION FEEDBACK ── */}
-      <section className="py-20 px-4 bg-[#E8F0E8]">
-        <div className="max-w-4xl mx-auto bg-[#3D332D] rounded-[2.5rem] sm:rounded-[4rem] p-10 sm:p-20 text-white text-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#E8603C] to-[#F2C94C]" />
-            <h2 className="text-4xl sm:text-6xl font-[1000] italic mb-8 tracking-tighter">Tu kiffes <span className="text-[#F2C94C]">l'idée ?</span></h2>
-            <form onSubmit={handleSendFeedback} className="max-w-md mx-auto space-y-4">
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder="Dis-nous cash ton avis..."
-                className="w-full bg-white/10 border border-white/20 rounded-2xl p-6 text-white focus:outline-none focus:border-[#E8603C] min-h-[120px] resize-none shadow-inner"
-              />
-              <button
-                type="submit"
-                disabled={isSending}
-                className="w-full bg-[#E8603C] py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg disabled:opacity-50"
-              >
-                {isSending ? "ENVOI..." : "ENVOYER L'AVIS"} <Send size={14} />
-              </button>
-            </form>
+      {/* ── TALENTS FLOTTANTS ── */}
+      <section className="relative py-32 overflow-hidden" style={{ backgroundColor: "#F5E6C8" }}>
+        {/* Cercles */}
+        {[400, 620, 840].map((s, i) => (
+          <div key={i} className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="rounded-full border-2" style={{ width: s, height: s, borderColor: `rgba(197,148,115,${0.18 - i * 0.05})` }} />
+          </div>
+        ))}
+
+        {/* Avatars */}
+        {floatingAvatars.map((av, i) => (
+          <div
+            key={i}
+            className="absolute z-10 rounded-full border-4 border-white flex items-center justify-center font-black text-sm select-none"
+            style={{
+              width: av.size, height: av.size,
+              top: av.top, left: av.left, right: av.right,
+              backgroundColor: "#ffffff",
+              color: av.color,
+              transform: `rotate(${av.rotate}deg)`,
+              boxShadow: `0 8px 28px ${av.color}35`,
+            }}
+          >
+            {av.initials}
+          </div>
+        ))}
+
+        {/* Texte */}
+        <div className="relative z-20 max-w-2xl mx-auto px-4 text-center">
+          <h2 className="text-4xl sm:text-5xl font-[1000] leading-tight mb-6 tracking-tight text-[#3D332D]">
+            Un campus rempli<br />
+            <span className="italic font-light text-[#C59473]">de talents</span> qui n'attendent<br />
+            que <span className="text-[#E8603C]">toi.</span>
+          </h2>
+          <p className="text-[#3D332D]/55 text-lg font-medium max-w-lg mx-auto mb-3">
+            Quelles sont les chances que l'étudiant qu'il te faut soit à deux pas de toi ? Sur Ventura, on te rapproche des meilleurs talents du campus.
+          </p>
+          <p className="text-[#3D332D]/40 text-base font-medium max-w-lg mx-auto">
+            Une communauté soudée, des services de confiance, et la proximité du campus — tout ça au même endroit.
+          </p>
+        </div>
+
+        {/* Vague vers le vert */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" className="block w-full h-[80px] md:h-[120px]">
+            <path d="M0,120 L0,60 C240,120 480,0 720,40 C960,80 1200,20 1440,60 L1440,120 Z" fill="#DDE8DC" />
+          </svg>
+        </div>
+      </section>
+
+      {/* ── FEEDBACK ── */}
+      <section className="py-24 px-4" style={{ backgroundColor: "#DDE8DC" }}>
+        <div className="max-w-3xl mx-auto bg-[#3D332D] rounded-[3rem] p-12 sm:p-16 text-white text-center shadow-2xl">
+          <h2 className="text-4xl sm:text-5xl font-[1000] italic mb-3 tracking-tighter">
+            C'est par <span className="text-[#F2C94C]">les étudiants,</span>
+          </h2>
+          <h2 className="text-4xl sm:text-5xl font-[1000] italic mb-10 tracking-tighter">
+            pour <span className="text-[#E8603C]">les étudiants.</span>
+          </h2>
+          <form onSubmit={handleSendFeedback} className="max-w-md mx-auto space-y-4">
+            <textarea
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              placeholder="Ton avis nous aide à améliorer le campus..."
+              className="w-full bg-white/10 border border-white/15 rounded-2xl p-5 text-white focus:outline-none focus:border-[#F2C94C] min-h-[110px] resize-none font-medium text-sm placeholder:text-white/30"
+            />
+            <button
+              type="submit"
+              disabled={isSending}
+              className="w-full bg-[#F2C94C] text-[#3D332D] py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#E8603C] hover:text-white transition-all"
+            >
+              {isSending ? "ENVOI..." : "ENVOYER MON FEEDBACK ✨"} <Send size={16} />
+            </button>
+          </form>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="py-12 text-center bg-white">
-        <div className="text-2xl font-[1000] tracking-tighter text-[#3D332D]">VEN<span className="text-[#C59473]">T</span>URA<span className="text-[#E8603C]">.</span></div>
-        <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#3D332D]/30 mt-3">© 2026 — Built with ❤️ for UM6P Students</p>
+      <footer className="bg-white text-[#3D332D] pt-16 pb-10 border-t border-[#D7CDC1]/30">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-10">
+          <div className="col-span-2 md:col-span-1">
+            <h1 className="text-2xl font-[1000] tracking-tighter text-[#3D332D] mb-3">
+              VEN<span className="text-[#C59473]">T</span>URA<span className="text-[#E8603C]">.</span>
+            </h1>
+            <p className="text-xs text-[#3D332D]/45 leading-relaxed mb-5">Le marché exclusif de l'UM6P. Confiance, proximité et opportunités.</p>
+            <div className="flex gap-4" style={{ opacity: 0.3 }}>
+              <Instagram size={18} className="hover:text-[#E8603C] cursor-pointer" />
+              <Facebook  size={18} className="hover:text-[#E8603C] cursor-pointer" />
+              <Linkedin  size={18} className="hover:text-[#E8603C] cursor-pointer" />
+            </div>
+          </div>
+          {[
+            { title: "Plateforme", links: [{ label: "Explorer les talents", to: "/marketplace" }, { label: "Proposer un service", to: "/add-service" }, { label: "Mon Dashboard", to: "/dashboard" }] },
+            { title: "Aide",       links: [{ label: "Guide Ventura", to: "/about" }, { label: "F.A.Q", to: "/faq" }, { label: "Sécurité", to: "/safety" }] },
+            { title: "L'Esprit",   links: [{ label: "Qui sommes-nous ?", to: "/about" }, { label: "Notre Impact", to: "/impact" }, { label: "Contact", to: "/impact" }] },
+            { title: "Légal",      links: [{ label: "Conditions", to: "/terms" }, { label: "Confidentialité", to: "/privacy" }] },
+          ].map((col) => (
+            <div key={col.title} className="space-y-3">
+              <h4 className="font-black text-[9px] uppercase tracking-widest text-[#3D332D]/50">{col.title}</h4>
+              <ul className="space-y-2">
+                {col.links.map((l) => (
+                  <li key={l.label}>
+                    <Link to={l.to} className="text-xs text-[#3D332D]/55 font-medium hover:text-[#E8603C] transition-colors">{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-14 pt-6 border-t border-[#D7CDC1]/20 text-center">
+          <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-20 flex items-center justify-center gap-2">
+            © 2026 — Built with ❤️ by UM6P Students <Zap size={9} fill="currentColor" />
+          </p>
+        </div>
       </footer>
     </div>
   );

@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Search, ShoppingCart, User, Zap, LogOut,
-  LayoutDashboard, Home as HomeIcon, Briefcase, X, Menu,
+  LayoutDashboard, Home as HomeIcon, Briefcase, X, Menu, BookOpen
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
 const Navbar = () => {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const token     = localStorage.getItem("token");
-  const [cartCount,    setCartCount]    = useState(0);
-  const [mobileOpen,   setMobileOpen]   = useState(false);
-  const [scrolled,     setScrolled]     = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem("token");
+  const [cartCount, setCartCount] = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   // Mise à jour du compteur panier
   useEffect(() => {
@@ -22,14 +22,14 @@ const Navbar = () => {
     };
     updateCount();
     window.addEventListener("cartUpdated", updateCount);
-    window.addEventListener("storage",     updateCount);
+    window.addEventListener("storage", updateCount);
     return () => {
       window.removeEventListener("cartUpdated", updateCount);
-      window.removeEventListener("storage",     updateCount);
+      window.removeEventListener("storage", updateCount);
     };
   }, []);
 
-  // Effet scroll pour ombre dynamique
+  // Effet scroll pour ombre et taille dynamique
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll);
@@ -50,182 +50,162 @@ const Navbar = () => {
     <>
       {/* ── NAVBAR PRINCIPALE ── */}
       <nav
-        className={`fixed w-full z-[100] top-0 bg-[#FDFBF9]/95 backdrop-blur-md border-b border-[#D7CDC1]/40 transition-shadow duration-300 ${
-          scrolled ? "shadow-md shadow-[#3D332D]/5" : "shadow-sm"
+        className={`fixed w-full z-[100] top-0 bg-[#FDFBF9]/95 backdrop-blur-md border-b border-[#D7CDC1]/40 transition-all duration-300 ${
+          scrolled ? "shadow-lg shadow-[#3D332D]/5 h-16 sm:h-20" : "h-20 sm:h-24"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 md:h-24 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
 
           {/* ── LOGO ── */}
           <Link to="/" className="flex-shrink-0 flex items-center gap-2 sm:gap-3 group">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-[#D7CDC1]/30 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:-rotate-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-[#D7CDC1]/30 flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:rotate-[360deg]">
               <img
                 src={logoImg}
                 alt="Logo Ventura"
-                className="w-full h-full object-contain scale-[1.5] sm:scale-[1.7]"
+                className="w-full h-full object-contain scale-[1.6]"
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg sm:text-2xl md:text-3xl font-[1000] tracking-tighter leading-none text-[#3D332D]">
+              <h1 className="text-xl sm:text-2xl font-[1000] tracking-tighter leading-none text-[#3D332D]">
                 VEN<span className="text-[#C59473]">T</span>URA
               </h1>
-              <div className="hidden sm:flex items-center gap-1 mt-0.5 opacity-35">
+              <div className="flex items-center gap-1 mt-0.5 opacity-40">
                 <Zap size={8} fill="currentColor" className="text-[#E8603C]" />
-                <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-nowrap">
-                  UM6P Market
-                </span>
+                <span className="text-[7px] font-black uppercase tracking-[0.2em]">UM6P MARKET</span>
               </div>
             </div>
           </Link>
 
-          {/* ── BARRE DE RECHERCHE (lg+) ── */}
-          <div className="hidden lg:flex flex-grow max-w-xs xl:max-w-sm relative">
+          {/* ── BARRE DE RECHERCHE (Visible à partir de md) ── */}
+          <div className="hidden md:flex flex-grow max-w-xs lg:max-w-sm relative group mx-4">
             <input
               type="text"
-              placeholder="Rechercher un talent..."
-              className="w-full bg-white border border-[#D7CDC1] focus:border-[#E8603C] rounded-2xl py-3 pl-5 pr-12 outline-none text-sm transition-all shadow-inner placeholder:text-[#3D332D]/30"
+              placeholder="Chercher un talent..."
+              className="w-full bg-white border border-[#D7CDC1] group-hover:border-[#E8603C] focus:border-[#E8603C] rounded-2xl py-2.5 pl-5 pr-12 outline-none text-sm transition-all shadow-inner placeholder:text-[#3D332D]/30"
             />
-            <Search size={16} className="absolute right-4 top-3.5 text-[#3D332D]/30" />
+            <div className="absolute right-2 top-1.5 p-1.5 bg-[#3D332D] rounded-xl text-white group-hover:bg-[#E8603C] transition-colors">
+                <Search size={14} />
+            </div>
           </div>
 
-          {/* ── ACTIONS desktop (sm+) ── */}
-          <div className="hidden sm:flex items-center gap-2 md:gap-4">
-            {/* Accueil */}
-            <Link
-              to="/"
-              className={`flex flex-col items-center p-1 transition-colors ${
-                isActive("/") ? "text-[#E8603C]" : "text-[#3D332D]/50 hover:text-[#3D332D]"
-              }`}
+          {/* ── NAVIGATION DESKTOP ── */}
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+            <Link 
+              to="/" 
+              className={`text-[10px] font-black uppercase tracking-widest transition-all ${isActive("/") ? "text-[#E8603C]" : "text-[#3D332D]/60 hover:text-[#3D332D]"}`}
             >
-              <HomeIcon size={20} />
-              <span className="hidden md:block text-[8px] font-black uppercase mt-0.5 tracking-widest">Accueil</span>
+              Accueil
             </Link>
 
-            {/* Vendre */}
+            <Link 
+              to="/about" 
+              className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${isActive("/about") ? "text-[#E8603C]" : "text-[#3D332D]/60 hover:text-[#E8603C]"}`}
+            >
+              <BookOpen size={14} className={isActive("/about") ? "animate-pulse" : ""} />
+              Guide
+            </Link>
+
+            <Link 
+              to="/marketplace" 
+              className={`text-[10px] font-black uppercase tracking-widest transition-all ${isActive("/marketplace") ? "text-[#E8603C]" : "text-[#3D332D]/60 hover:text-[#3D332D]"}`}
+            >
+              Explorer
+            </Link>
+          </div>
+
+          {/* ── ACTIONS ── */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            
             <Link
               to="/add-service"
-              className={`group flex flex-col items-center p-1 ${
-                isActive("/add-service") ? "text-[#E8603C]" : ""
-              }`}
+              className="hidden sm:flex items-center gap-2 bg-[#E8603C]/10 text-[#E8603C] px-4 py-2.5 rounded-xl font-black uppercase text-[9px] tracking-widest border border-[#E8603C]/20 hover:bg-[#E8603C] hover:text-white transition-all active:scale-95"
             >
-              <div className={`p-2 md:p-2.5 border-2 rounded-xl md:rounded-2xl transition-all ${
-                isActive("/add-service")
-                  ? "bg-[#E8603C] border-[#E8603C] text-white"
-                  : "border-[#E8603C]/20 text-[#E8603C] group-hover:bg-[#E8603C] group-hover:text-white"
-              }`}>
-                <Briefcase size={18} className="md:size-[20px]" />
-              </div>
-              <span className="hidden md:block text-[8px] font-black text-[#E8603C] uppercase mt-0.5 tracking-tighter">Vendre</span>
+              <Briefcase size={14} />
+              Vendre
             </Link>
 
-            <div className="h-7 md:h-9 w-px bg-[#D7CDC1]/60 mx-0.5" />
+            <div className="hidden sm:block h-8 w-px bg-[#D7CDC1]/50 mx-1" />
 
             {token ? (
-              <>
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Link
                   to="/dashboard"
-                  className={`flex flex-col items-center p-1 transition-colors ${
-                    isActive("/dashboard") ? "text-[#E8603C]" : "text-[#3D332D]/50 hover:text-[#E8603C]"
-                  }`}
+                  className={`p-2 rounded-xl transition-all ${isActive("/dashboard") ? "bg-[#3D332D] text-white" : "text-[#3D332D]/50 hover:bg-[#D7CDC1]/20"}`}
                 >
-                  <LayoutDashboard size={20} className="md:size-[22px]" />
+                  <LayoutDashboard size={20} />
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-[#3D332D]/40 hover:text-red-500 p-1 transition-colors"
+                  className="p-2 text-[#3D332D]/30 hover:text-red-500 transition-colors"
                 >
-                  <LogOut size={20} className="md:size-[22px]" />
+                  <LogOut size={20} />
                 </button>
-              </>
+              </div>
             ) : (
               <Link
                 to="/login"
-                className={`flex flex-col items-center p-1 transition-colors ${
-                  isActive("/login") ? "text-[#E8603C]" : "text-[#3D332D]/50 hover:text-[#E8603C]"
-                }`}
+                className={`p-2 rounded-xl transition-all ${isActive("/login") ? "text-[#E8603C]" : "text-[#3D332D]/50 hover:text-[#E8603C]"}`}
               >
-                <User size={20} className="md:size-[22px]" />
-                <span className="hidden md:block text-[8px] font-black uppercase mt-0.5">Login</span>
+                <User size={20} />
               </Link>
             )}
 
-            {/* Panier */}
             <Link
               to="/cart"
-              className="relative flex items-center bg-[#3D332D] text-white p-2.5 md:p-3.5 rounded-xl md:rounded-2xl hover:bg-[#E8603C] transition-all group"
+              className="relative flex items-center bg-[#3D332D] text-white p-2.5 sm:p-3 rounded-xl hover:bg-[#E8603C] transition-all shadow-lg shadow-[#3D332D]/10 active:scale-90"
             >
-              <ShoppingCart size={17} className="md:size-[20px] group-hover:scale-110 transition-transform" />
+              <ShoppingCart size={18} />
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-[#E8603C] text-white text-[8px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#FDFBF9] font-black">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-
-          {/* ── ACTIONS mobile ── */}
-          <div className="flex sm:hidden items-center gap-2">
-            {/* Panier mobile */}
-            <Link
-              to="/cart"
-              className="relative flex items-center bg-[#3D332D] text-white p-2.5 rounded-xl hover:bg-[#E8603C] transition-all"
-            >
-              <ShoppingCart size={17} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-[#E8603C] text-white text-[8px] w-4.5 h-4.5 w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-[#FDFBF9] font-black">
+                <span className="absolute -top-1.5 -right-1.5 bg-[#E8603C] text-white text-[9px] min-w-[20px] h-5 rounded-full flex items-center justify-center border-2 border-[#FDFBF9] font-black px-1">
                   {cartCount}
                 </span>
               )}
             </Link>
 
-            {/* Burger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-xl border border-[#D7CDC1] bg-white text-[#3D332D] transition-colors hover:border-[#E8603C]"
-              aria-label="Menu"
+              className="flex lg:hidden p-2.5 rounded-xl border border-[#D7CDC1] bg-white text-[#3D332D] transition-all active:scale-90"
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
-
         </div>
       </nav>
 
-      {/* ── MENU MOBILE (slide-down) ── */}
+      {/* ── MENU MOBILE OVERLAY ── */}
       <div
-        className={`fixed inset-x-0 top-16 z-[99] sm:hidden bg-[#FDFBF9] border-b border-[#D7CDC1]/50 shadow-xl transition-all duration-300 overflow-hidden ${
-          mobileOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+        className={`fixed inset-x-0 top-0 z-[99] lg:hidden bg-[#FDFBF9] border-b border-[#D7CDC1]/50 shadow-2xl transition-all duration-500 ease-in-out transform ${
+          mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
         }`}
       >
-        <div className="px-4 pt-4 pb-6 flex flex-col gap-2">
-          {/* Recherche */}
-          <div className="relative mb-2">
+        <div className="pt-24 pb-10 px-6 flex flex-col gap-3">
+          
+          <div className="relative mb-4 md:hidden px-1">
             <input
               type="text"
-              placeholder="Rechercher un talent..."
-              className="w-full bg-white border border-[#D7CDC1] focus:border-[#E8603C] rounded-2xl py-3 pl-5 pr-12 outline-none text-sm transition-all"
+              placeholder="Chercher un talent..."
+              className="w-full bg-white border border-[#D7CDC1] focus:border-[#E8603C] rounded-2xl py-4 pl-5 pr-12 outline-none text-sm transition-all"
             />
-            <Search size={16} className="absolute right-4 top-3.5 text-[#3D332D]/30" />
+            <Search size={18} className="absolute right-5 top-4 text-[#3D332D]/30" />
           </div>
 
+          <p className="text-[10px] font-black text-[#3D332D]/30 uppercase tracking-[0.3em] mb-2 px-4">Navigation</p>
+          
           {[
-            { to: "/",            icon: <HomeIcon size={18} />,        label: "Accueil" },
-            { to: "/add-service", icon: <Briefcase size={18} />,       label: "Proposer un service", accent: true },
-            { to: "/marketplace", icon: <Search size={18} />,          label: "Explorer" },
-            ...(token
-              ? [{ to: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Mon dashboard" }]
-              : [{ to: "/login",     icon: <User size={18} />,            label: "Connexion" }]
-            ),
+            { to: "/", icon: <HomeIcon size={18} />, label: "Accueil" },
+            { to: "/about", icon: <BookOpen size={18} />, label: "Guide & Esprit Ventura" },
+            { to: "/marketplace", icon: <Search size={18} />, label: "Explorer les talents" },
+            { to: "/add-service", icon: <Briefcase size={18} />, label: "Proposer mon service", accent: true },
           ].map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+              className={`flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-sm transition-all ${
                 isActive(item.to)
-                  ? "bg-[#E8603C] text-white"
+                  ? "bg-[#3D332D] text-white shadow-lg"
                   : item.accent
-                  ? "bg-[#E8603C]/10 text-[#E8603C] hover:bg-[#E8603C] hover:text-white"
-                  : "text-[#3D332D]/70 hover:bg-[#D7CDC1]/20 hover:text-[#3D332D]"
+                  ? "bg-[#E8603C] text-white"
+                  : "bg-white border border-[#D7CDC1]/30 text-[#3D332D]/70 hover:bg-[#D7CDC1]/10"
               }`}
             >
               {item.icon}
@@ -233,14 +213,24 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {token && (
-            <button
+          <div className="h-px bg-[#D7CDC1]/30 my-4" />
+
+          {token ? (
+             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-sm text-red-400 hover:bg-red-50 hover:text-red-600 transition-all mt-1"
+              className="flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-sm text-red-500 bg-red-50 transition-all"
             >
               <LogOut size={18} />
-              Déconnexion
+              Se déconnecter
             </button>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-sm bg-[#7A9E7E]/10 text-[#7A9E7E] border border-[#7A9E7E]/20"
+            >
+              <User size={18} />
+              Espace membre
+            </Link>
           )}
         </div>
       </div>
