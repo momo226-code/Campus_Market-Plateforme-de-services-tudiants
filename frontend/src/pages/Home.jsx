@@ -59,47 +59,54 @@ const Home = () => {
   const currentSvc = services[currentServiceIndex];
   const theme = badgeThemes[currentServiceIndex % badgeThemes.length];
 
-  const floatingAvatars = [
-    { initials: "SA", color: "#E8603C", top: "12%", left: "5%",   size: 60, rotate: -8 },
-    { initials: "MY", color: "#7A9E7E", top: "52%", left: "7%",   size: 52, rotate: 5  },
-    { initials: "IB", color: "#C59473", top: "78%", left: "20%",  size: 56, rotate: -4 },
-    { initials: "LH", color: "#E8603C", top: "10%", right: "5%",  size: 54, rotate: 7  },
-    { initials: "ZO", color: "#7A9E7E", top: "58%", right: "5%",  size: 62, rotate: -6 },
-    { initials: "AM", color: "#C59473", top: "78%", right: "16%", size: 50, rotate: 4  },
-  ];
 
   return (
     <div className="min-h-screen text-[#3D332D] overflow-x-hidden" style={{ backgroundColor: "#F5E6C8" }}>
 
       {/* ── HERO ── */}
       <section
-        className="relative pt-24 sm:pt-36 md:pt-44 lg:pt-52 pb-0 overflow-hidden bg-cover bg-center"
+        className="relative min-h-screen flex flex-col justify-center overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, rgb(243, 234, 215), rgba(245,230,200,0.60)), url(${heroImg})`,
+          backgroundImage: `url(${heroImg})`,
           backgroundColor: "#F5E6C8",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "none",
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center pb-36">
+        {/* Image floue en arrière-plan */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${heroImg})`,
+            filter: "blur(3px)",
+            transform: "scale(1.05)",
+          }}
+        />
+        {/* Overlay sombre pour lisibilité */}
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(30,20,10,0.45)" }} />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-32 sm:py-40">
 
           {/* LEFT */}
           <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-[#E8603C]/10 text-[#E8603C] px-4 py-1.5 rounded-full text-[10px] font-[1000] uppercase tracking-widest mb-6 border border-[#E8603C]/20">
+            <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full text-[10px] font-[1000] uppercase tracking-widest mb-6 border border-white/20">
               <Star size={11} fill="currentColor" /> Le marché des talents UM6P
             </div>
-            <h1 className="text-6xl xs:text-7xl md:text-8xl lg:text-9xl font-[1000] tracking-tighter leading-[0.85] mb-6 text-[#3D332D]">
+            <h1 className="text-6xl xs:text-7xl md:text-8xl lg:text-9xl font-[1000] tracking-tighter leading-[0.85] mb-6 text-white">
               VEN<span className="text-[#C59473]">T</span>URA<span className="text-[#E8603C]">.</span>
             </h1>
-            <p className="text-base md:text-lg text-[#3D332D]/65 max-w-xl mx-auto lg:mx-0 mb-2 font-medium">
+            <p className="text-base md:text-lg text-white/80 max-w-xl mx-auto lg:mx-0 mb-2 font-medium">
               La plateforme exclusive d'échange de services pour la communauté UM6P.
             </p>
-            <p className="text-base md:text-lg text-[#3D332D] max-w-xl mx-auto lg:mx-0 mb-10 font-bold italic">
+            <p className="text-base md:text-lg text-[#F2C94C] max-w-xl mx-auto lg:mx-0 mb-10 font-bold italic">
               Ton talent a de la valeur ici. Postule pour financer tes projets !
             </p>
             <div className="flex justify-center lg:justify-start gap-4 flex-wrap">
               <Link to="/add-service" className="bg-[#3D332D] text-white px-8 py-4 rounded-2xl shadow-xl hover:bg-[#E8603C] transition-all font-black uppercase text-xs tracking-widest flex items-center gap-3">
                 Vendre un talent <ArrowRight size={16} />
               </Link>
-              <Link to="/marketplace" className="border-2 border-[#3D332D]/30 text-[#3D332D] px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:border-[#E8603C] hover:text-[#E8603C] transition-all">
+              <Link to="/marketplace" className="border-2 border-white/40 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:border-white hover:bg-white/10 transition-all">
                 Explorer →
               </Link>
             </div>
@@ -169,24 +176,6 @@ const Home = () => {
         {[400, 620, 840].map((s, i) => (
           <div key={i} className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="rounded-full border-2" style={{ width: s, height: s, borderColor: `rgba(197,148,115,${0.18 - i * 0.05})` }} />
-          </div>
-        ))}
-
-        {/* Avatars */}
-        {floatingAvatars.map((av, i) => (
-          <div
-            key={i}
-            className="absolute z-10 rounded-full border-4 border-white flex items-center justify-center font-black text-sm select-none"
-            style={{
-              width: av.size, height: av.size,
-              top: av.top, left: av.left, right: av.right,
-              backgroundColor: "#ffffff",
-              color: av.color,
-              transform: `rotate(${av.rotate}deg)`,
-              boxShadow: `0 8px 28px ${av.color}35`,
-            }}
-          >
-            {av.initials}
           </div>
         ))}
 
